@@ -116,7 +116,8 @@ td.tc-total{text-align:right;font-weight:700;color:var(--text);background:#E8F8F
 td.tc-cp{background:#FFF8E1!important;}
 td.tc-cp input{color:#E65100!important;}
 /* cargo seguro */
-td.tc-cs{text-align:right;font-weight:700;color:#2E7D32;background:#E8F5E9!important;padding-right:8px;white-space:nowrap;}
+td.tc-cs{background:#E8F5E9!important;}
+td.tc-cs input{color:#2E7D32!important;}
 
 tfoot tr{background:var(--blue-dark);color:white;}
 tfoot td{padding:10px 7px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11.5px;border-right:1px solid rgba(255,255,255,0.12);text-align:right;padding-right:8px;}
@@ -168,6 +169,9 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 
 /* DETAIL CELL */
 .detail-col{min-width:140px;}
+
+/* uppercase visual hint */
+.field-row input, td input.desc-input { text-transform: uppercase; }
 
 @media print{
   .nav,.actions,.form-topbar,.mod-badge{display:none!important;}
@@ -290,8 +294,8 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
             <th style="width:7%">Cant.</th>
             <th style="width:11%">P. Unit.</th>
             <th style="width:10%">Total</th>
-            <th style="width:11%">C. Paciente</th>
-            <th style="width:10%">C. Seguro</th>
+            <th style="width:11%" title="Si ponés 0, el total pasa al Seguro">C. Paciente</th>
+            <th style="width:10%" title="Si ponés 0, el total pasa al Paciente">C. Seguro</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -419,7 +423,7 @@ function fmt(n) {
 function buildTable(rows) {
   const tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-  (rows || ITEMS.map(item => ({ concepto: item, detalle: '', qty: 1, price: 0, cp: 0 }))).forEach((row, i) => {
+  (rows || ITEMS.map(item => ({ concepto: item, detalle: '', qty: 1, price: 0, cp: 0, cs: 0 }))).forEach((row, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="idx">${i+1}</td>
@@ -428,16 +432,69 @@ function buildTable(rows) {
       <td><input type="number" class="qty" value="${row.qty||1}" min="0"></td>
       <td><input type="number" class="price" value="${row.price||0}" min="0"></td>
       <td class="tc-total" id="rt-${i}">0</td>
-      <td class="tc-cp"><input type="number" class="cargo-p" value="${row.cp||0}" min="0"></td>
-      <td class="tc-cs" id="rs-${i}">0</td>
+      <td class="tc-cp"><input type="number" class="cargo-p" value="${row.cp||0}" min="0" placeholder="0"></td>
+      <td class="tc-cs"><input type="number" class="cargo-s" value="${row.cs||0}" min="0" placeholder="0"></td>
     `;
     tbody.appendChild(tr);
   });
-  tbody.querySelectorAll('.qty,.price').forEach(inp => inp.addEventListener('input', () => { updateTotals(); markDirty(); }));
+
+  // ── Cargo bidireccional ──────────────────────────────
   tbody.querySelectorAll('.cargo-p').forEach((inp, i) => {
-    inp.addEventListener('input', () => { inp.dataset.touched='1'; updateCargoRow(i); updateGT(); markDirty(); });
+    inp.addEventListener('input', () => {
+      inp.dataset.touched = '1';
+      // Si paciente = 0 → todo al seguro (limpiar touched en seguro)
+      const csInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cargo-s');
+      if (parseFloat(inp.value) === 0) {
+        csInp.value = '';
+        delete csInp.dataset.touched;
+      }
+      updateCargoRow(i); updateGT(); markDirty();
+    });
   });
+  tbody.querySelectorAll('.cargo-s').forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.dataset.touched = '1';
+      // Si seguro = 0 → todo al paciente (limpiar touched en paciente)
+      const cpInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cargo-p');
+      if (parseFloat(inp.value) === 0) {
+        cpInp.value = '';
+        delete cpInp.dataset.touched;
+      }
+      updateCargoRow(i); updateGT(); markDirty();
+    });
+  });
+
+  tbody.querySelectorAll('.qty,.price').forEach(inp => inp.addEventListener('input', () => { updateTotals(); markDirty(); }));
   tbody.querySelectorAll('.desc-input,.detalle-input').forEach(inp => inp.addEventListener('input', markDirty));
+
+  // ── Mayúsculas automáticas en campos de texto ────────
+  tbody.querySelectorAll('input[type=text]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const pos = inp.selectionStart;
+      inp.value = inp.value.toUpperCase();
+      inp.setSelectionRange(pos, pos);
+    });
+  });
+
+  // ── Enter mueve al siguiente campo ──────────────────
+  const allInputs = () => [
+    ...document.querySelectorAll(
+      '#nombre,#seguro,#plan,#celular,#email,#padre,#cirugia,#cirujano,' +
+      '#tbody input,#obs'
+    )
+  ].filter(el => !el.disabled && el.offsetParent !== null);
+
+  document.querySelectorAll('#tbody input').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const list = allInputs();
+        const idx  = list.indexOf(inp);
+        if (idx >= 0 && idx < list.length - 1) list[idx + 1].focus();
+      }
+    });
+  });
+
   updateTotals();
 }
 
@@ -447,24 +504,34 @@ function updateCargoRow(i) {
   const row   = document.querySelectorAll('#tbody tr')[i];
   const total = (parseFloat(row.querySelector('.qty').value)||0) * (parseFloat(row.querySelector('.price').value)||0);
   const cpInp = row.querySelector('.cargo-p');
+  const csInp = row.querySelector('.cargo-s');
   const cpVal = parseFloat(cpInp.value);
-  if (cpVal === 0) {
-    document.getElementById(`rs-${i}`).textContent = fmt(total);
-    document.getElementById(`rt-${i}`).textContent = fmt(total);
-  } else {
-    const cp = Math.min(cpVal, total);
-    document.getElementById(`rs-${i}`).textContent = fmt(Math.max(0, total - cp));
-    document.getElementById(`rt-${i}`).textContent = fmt(total);
+  const csVal = parseFloat(csInp.value);
+
+  document.getElementById(`rt-${i}`).textContent = fmt(total);
+
+  // Paciente = 0  →  todo va al seguro
+  if (cpInp.dataset.touched && cpVal === 0) {
+    csInp.value = Math.round(total);
+    csInp.dataset.touched = '1';
+    return;
+  }
+  // Seguro = 0  →  todo va al paciente
+  if (csInp.dataset.touched && csVal === 0) {
+    cpInp.value = Math.round(total);
+    cpInp.dataset.touched = '1';
+    return;
+  }
+  // Ninguno tocado → paciente toma el total por defecto
+  if (!cpInp.dataset.touched && !csInp.dataset.touched) {
+    cpInp.value = Math.round(total);
+    csInp.value = 0;
   }
 }
 
 function updateTotals() {
   const rows = document.querySelectorAll('#tbody tr');
   rows.forEach((tr, i) => {
-    const total = (parseFloat(tr.querySelector('.qty').value)||0) * (parseFloat(tr.querySelector('.price').value)||0);
-    document.getElementById(`rt-${i}`).textContent = fmt(total);
-    const cpInp = tr.querySelector('.cargo-p');
-    if (!cpInp.dataset.touched) cpInp.value = Math.round(total);
     updateCargoRow(i);
   });
   updateGT();
@@ -475,9 +542,8 @@ function updateGT() {
   let gt=0, gp=0, gs=0;
   rows.forEach((tr,i)=>{
     const total=(parseFloat(tr.querySelector('.qty').value)||0)*(parseFloat(tr.querySelector('.price').value)||0);
-    const cpVal=parseFloat(tr.querySelector('.cargo-p').value);
-    const cp = cpVal===0 ? 0 : Math.min(cpVal,total);
-    const cs = cpVal===0 ? total : Math.max(0,total-cp);
+    const cp=parseFloat(tr.querySelector('.cargo-p').value)||0;
+    const cs=parseFloat(tr.querySelector('.cargo-s').value)||0;
     gt+=total; gp+=cp; gs+=cs;
   });
   document.getElementById('gt-total').textContent    = fmt(gt);
@@ -496,7 +562,8 @@ function collectFormData() {
       detalle:  tr.querySelector('.detalle-input').value,
       qty:   parseFloat(tr.querySelector('.qty').value)||0,
       price: parseFloat(tr.querySelector('.price').value)||0,
-      cp:    parseFloat(tr.querySelector('.cargo-p').value)||0
+      cp:    parseFloat(tr.querySelector('.cargo-p').value)||0,
+      cs:    parseFloat(tr.querySelector('.cargo-s').value)||0
     });
   });
   return {
@@ -531,8 +598,34 @@ function markDirty() {
 
 // attach dirty listeners to patient fields
 function attachPatientListeners() {
-  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','fecha','obs']
-    .forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('input', markDirty); });
+  const patientIds = ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','fecha','obs'];
+  patientIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', markDirty);
+    // Mayúsculas automáticas en campos de texto
+    if (el.tagName === 'INPUT' && el.type === 'text') {
+      el.addEventListener('input', () => {
+        const pos = el.selectionStart;
+        el.value = el.value.toUpperCase();
+        el.setSelectionRange(pos, pos);
+      });
+    }
+    // Enter → siguiente campo
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const all = [
+          ...document.querySelectorAll(
+            '#nombre,#seguro,#plan,#celular,#email,#padre,#cirugia,#cirujano,' +
+            '#tbody input,#obs'
+          )
+        ].filter(el => !el.disabled && el.offsetParent !== null);
+        const idx = all.indexOf(el);
+        if (idx >= 0 && idx < all.length - 1) all[idx + 1].focus();
+      }
+    });
+  });
 }
 
 // ══════════════════════════════════════════════════════════
@@ -585,6 +678,12 @@ function loadPresupuesto(nro) {
     if (data.rows[i] && data.rows[i].cp !== undefined) {
       inp.value = data.rows[i].cp;
       if (data.rows[i].cp > 0) inp.dataset.touched = '1';
+    }
+  });
+  document.querySelectorAll('.cargo-s').forEach((inp, i) => {
+    if (data.rows[i] && data.rows[i].cs !== undefined) {
+      inp.value = data.rows[i].cs;
+      if (data.rows[i].cs > 0) inp.dataset.touched = '1';
     }
   });
   updateTotals();
