@@ -10,8 +10,6 @@
 :root{--blue:#1565C0;--blue-med:#1976D2;--blue-light:#E3F2FD;--blue-dark:#0D47A1;--gray:#F5F5F5;--border:#B0BEC5;--text:#212121;--orange:#FF6F00;--green:#2E7D32;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:"Inter",sans-serif;background:linear-gradient(135deg,#0D47A1 0%,#1565C0 40%,#1976D2 100%);min-height:100vh;color:var(--text);}
-
-/* NAV */
 .nav{background:rgba(0,0,0,0.25);backdrop-filter:blur(10px);padding:0 24px;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,0.15);position:sticky;top:0;z-index:100;}
 .nav-logo{display:flex;align-items:center;gap:10px;padding:10px 0;margin-right:24px;}
 .nav-logo img{width:36px;height:36px;object-fit:contain;}
@@ -22,12 +20,9 @@ body{font-family:"Inter",sans-serif;background:linear-gradient(135deg,#0D47A1 0%
 .nav-tab:hover{color:white;background:rgba(255,255,255,0.06);}
 .nav-tab.active{color:white;border-bottom-color:#FFD54F;}
 .nav-counter{margin-left:auto;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:5px 14px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:700;color:white;}
-
-/* VIEWS */
-.view{display:none;padding:24px;max-width:1100px;margin:0 auto;}
+.view{display:none;padding:24px;max-width:1050px;margin:0 auto;}
 .view.active{display:block;}
 .card{background:white;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,0.18);overflow:hidden;}
-
 /* SEARCH */
 .search-bar{display:flex;gap:10px;margin-bottom:20px;}
 .search-bar input{flex:1;border:2px solid rgba(255,255,255,0.3);border-radius:10px;padding:12px 18px;font-family:"Inter",sans-serif;font-size:14px;background:rgba(255,255,255,0.15);color:white;outline:none;transition:all 0.2s;}
@@ -52,14 +47,12 @@ body{font-family:"Inter",sans-serif;background:linear-gradient(135deg,#0D47A1 0%
 .badge-mod{background:#FFF3E0;color:var(--orange);}
 .empty-state{text-align:center;padding:60px 20px;color:rgba(255,255,255,0.6);}
 .empty-state p{font-family:"Montserrat",sans-serif;font-size:14px;font-weight:600;}
-
 /* FORM TOPBAR */
 .form-topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
 .form-topbar h2{font-family:"Montserrat",sans-serif;font-size:16px;font-weight:800;color:white;flex:1;}
 .mod-badge{display:flex;align-items:center;gap:6px;background:#FF6F00;color:white;border-radius:20px;padding:5px 14px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:700;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.7;}}
-
-/* DOCUMENT HEADER */
+/* DOCUMENT */
 .doc-header{background:white;padding:14px 24px 0;border-bottom:3px solid var(--blue);display:flex;align-items:center;gap:16px;}
 .doc-logo img{width:72px;height:72px;object-fit:contain;}
 .doc-title{flex:1;text-align:center;padding-bottom:12px;}
@@ -71,11 +64,7 @@ body{font-family:"Inter",sans-serif;background:linear-gradient(135deg,#0D47A1 0%
 .nro-display{border:1.5px solid var(--blue-med);border-radius:5px;padding:4px 8px;font-size:14px;font-family:"Montserrat",sans-serif;font-weight:800;color:var(--blue-dark);background:var(--blue-light);letter-spacing:2px;}
 .meta-field input{border:1.5px solid var(--border);border-radius:5px;padding:4px 7px;font-size:11px;font-family:"Inter",sans-serif;color:var(--text);background:var(--blue-light);outline:none;}
 .meta-field input:focus{border-color:var(--blue-med);}
-
-/* SECTION HEADER */
 .sec-hdr{background:var(--blue-med);color:white;font-family:"Montserrat",sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 24px;}
-
-/* PATIENT GRID */
 .patient-grid{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px solid var(--blue);}
 .field-row{display:flex;align-items:center;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;}
 .field-row:nth-child(odd){background:var(--blue-light);}
@@ -84,7 +73,6 @@ body{font-family:"Inter",sans-serif;background:linear-gradient(135deg,#0D47A1 0%
 .field-row input{flex:1;border:none;background:transparent;padding:7px 8px;font-size:11px;font-family:"Inter",sans-serif;color:var(--text);outline:none;text-transform:uppercase;}
 .field-row input:focus{background:rgba(21,101,192,0.07);}
 .divider-bar{height:4px;background:var(--blue-dark);}
-
 /* TABLE */
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:11px;}
@@ -96,55 +84,36 @@ tbody tr:nth-child(even){background:#FAFAFA;}
 tbody tr:hover{background:#EBF5FB;}
 tbody td{padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;vertical-align:middle;}
 td.idx{text-align:center;color:#90A4AE;font-size:10px;font-weight:700;width:24px;}
-
-/* All table inputs */
 td input{width:100%;border:none;background:transparent;font-family:"Inter",sans-serif;font-size:11px;outline:none;padding:2px 3px;}
 td input.concepto-input{text-align:left;font-weight:400;color:var(--text);text-transform:uppercase;}
 td input.detalle-input{text-align:left;font-weight:400;color:#546E7A;font-style:italic;text-transform:uppercase;}
 td input.qty-input{text-align:right;color:var(--blue-dark);font-weight:600;}
 td input.price-input{text-align:right;color:var(--blue-dark);font-weight:600;}
-td input.cp-input{text-align:right;color:#E65100;font-weight:600;}
-td input.cs-input{text-align:right;color:#2E7D32;font-weight:600;}
-
-/* Calculated total cell (read-only display) */
-td.tc-total{text-align:right;font-weight:700;color:var(--text);background:#E8F8F5!important;padding-right:7px;white-space:nowrap;font-size:11px;}
-td.tc-cp{background:#FFF8E1!important;}
-td.tc-cs{background:#E8F5E9!important;}
-
+td.tc-total{text-align:right;font-weight:700;color:var(--text);background:#E8F8F5!important;padding-right:8px;white-space:nowrap;font-size:11px;}
 tfoot tr{background:var(--blue-dark);color:white;}
-tfoot td{padding:9px 6px;font-family:"Montserrat",sans-serif;font-weight:700;font-size:11px;border-right:1px solid rgba(255,255,255,0.12);text-align:right;padding-right:7px;}
+tfoot td{padding:9px 6px;font-family:"Montserrat",sans-serif;font-weight:700;font-size:12px;border-right:1px solid rgba(255,255,255,0.12);text-align:right;padding-right:8px;}
 tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-size:9px;}
-
+/* TOTAL BAR */
+.total-bar{background:var(--blue-dark);color:white;padding:12px 24px;text-align:center;}
+.total-bar label{font-family:"Montserrat",sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.8;display:block;margin-bottom:3px;}
+.total-bar span{font-family:"Montserrat",sans-serif;font-size:22px;font-weight:800;color:#FFD54F;letter-spacing:1px;}
 /* OBS */
 .obs-wrap{padding:0 24px;}
 .obs-hdr{background:var(--blue-med);color:white;font-family:"Montserrat",sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;margin:0 -24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .obs-note{font-size:9px;color:#FFF176;font-weight:500;letter-spacing:0;text-transform:none;font-style:italic;}
-.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:8px;font-family:"Inter",sans-serif;font-size:11px;color:var(--text);resize:vertical;min-height:55px;outline:none;text-transform:uppercase;}
+.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:55px;outline:none;text-transform:uppercase;}
 .obs-wrap textarea:focus{border-color:var(--blue-med);}
 .footer-note{text-align:center;font-size:9px;color:#78909C;font-style:italic;padding:6px 24px;background:var(--blue-light);border-top:1px solid #BBDEFB;}
-
-/* TOTALS SUMMARY BAR */
-.totals-bar{display:flex;background:#0D47A1;color:white;padding:10px 24px;gap:16px;align-items:center;flex-wrap:wrap;}
-.total-item{display:flex;flex-direction:column;align-items:center;flex:1;min-width:120px;}
-.total-item label{font-family:"Montserrat",sans-serif;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75;margin-bottom:2px;}
-.total-item span{font-family:"Montserrat",sans-serif;font-size:15px;font-weight:800;letter-spacing:0.5px;}
-.total-item.highlight span{color:#FFD54F;font-size:18px;}
-.total-divider{width:1px;height:36px;background:rgba(255,255,255,0.2);}
-
 /* ACTIONS */
 .actions{display:flex;gap:10px;justify-content:center;padding:14px 24px 18px;flex-wrap:wrap;background:white;border-top:2px solid var(--blue-light);}
 .btn{display:flex;align-items:center;gap:8px;padding:10px 20px;border:none;border-radius:50px;font-family:"Montserrat",sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
 .btn:hover{transform:translateY(-2px);}
 .btn-pdf{background:var(--blue-dark);color:white;box-shadow:0 4px 14px rgba(13,71,161,0.35);}
-.btn-pdf:hover{background:#0A3880;}
 .btn-wa{background:#25D366;color:white;box-shadow:0 4px 14px rgba(37,211,102,0.35);}
 .btn-wa:hover{background:#1DA851;}
 .btn-save{background:#2E7D32;color:white;box-shadow:0 4px 14px rgba(46,125,50,0.35);}
-.btn-save:hover{background:#1B5E20;}
 .btn-back{background:white;color:#546E7A;border:2px solid #B0BEC5;}
-.btn-back:hover{background:var(--gray);}
 .btn-clear{background:white;color:#546E7A;border:2px solid #B0BEC5;}
-
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);z-index:1000;align-items:center;justify-content:center;}
 .modal-overlay.show{display:flex;}
@@ -160,44 +129,13 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 .btn-mc{padding:10px 22px;border:2px solid #B0BEC5;border-radius:50px;background:white;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;color:#546E7A;cursor:pointer;}
 .btn-ms{padding:10px 24px;border:none;border-radius:50px;background:#25D366;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;}
 .btn-ms:hover{background:#1DA851;}
-
-/* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;background:#212121;color:white;padding:12px 20px;border-radius:10px;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.green{background:#2E7D32;}
-.toast.orange{background:#E65100;}
-
-/* ═══════════════════════════════════════════
-   PDF PRINT STYLES - Compact, no wasted space
-   ═══════════════════════════════════════════ */
-@media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  html,body{background:white!important;padding:0!important;margin:0!important;}
-  .nav,.actions,.form-topbar,.mod-badge{display:none!important;}
-  .view{padding:0!important;max-width:100%!important;}
-  .card{box-shadow:none!important;border-radius:0!important;}
-  input,textarea{border:none!important;background:transparent!important;-webkit-appearance:none;}
-  .doc-header{padding:8px 16px 0!important;}
-  .doc-logo img{width:52px!important;height:52px!important;}
-  .doc-title h1{font-size:13px!important;}
-  .field-label{padding:4px 8px!important;min-width:120px!important;}
-  .field-row input{padding:4px 6px!important;font-size:10px!important;}
-  thead th{padding:6px 4px!important;font-size:8px!important;}
-  tbody td{padding:2px 4px!important;}
-  table{font-size:10px!important;}
-  .obs-wrap textarea{min-height:35px!important;font-size:10px!important;padding:5px!important;}
-  .totals-bar{padding:7px 16px!important;display:flex!important;}
-  .total-item span{font-size:12px!important;}
-  .total-item.highlight span{font-size:14px!important;}
-  .footer-note{padding:4px 16px!important;font-size:8px!important;}
-  /* Hide the tfoot (table totals row) in PDF - totals-bar replaces it */
-  tfoot{display:none!important;}
-}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav">
   <div class="nav-logo">
     <img src="data:image/png;base64,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" alt="IPN">
@@ -210,7 +148,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
   <div class="nav-counter" id="navCounter">0 presupuestos</div>
 </nav>
 
-<!-- VIEW: SEARCH -->
+<!-- VIEW SEARCH -->
 <div class="view active" id="view-search">
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre, N°, cirugía, seguro..." oninput="renderList()">
@@ -223,7 +161,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
   <div id="presupList"></div>
 </div>
 
-<!-- VIEW: FORM -->
+<!-- VIEW FORM -->
 <div class="view" id="view-form">
   <div class="form-topbar">
     <button class="btn btn-back" onclick="goBack()">← Volver</button>
@@ -232,12 +170,8 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
   </div>
 
   <div class="card" id="printArea">
-
-    <!-- DOCUMENT HEADER -->
     <div class="doc-header">
-      <div class="doc-logo">
-        <img src="data:image/png;base64,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" alt="IPN">
-      </div>
+      <div class="doc-logo"><img src="data:image/png;base64,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" alt="IPN"></div>
       <div class="doc-title">
         <h1>Instituto Privado del Niño y Adolescente</h1>
         <p>Presupuesto Quirúrgico Aproximado</p>
@@ -258,12 +192,11 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
       </div>
     </div>
 
-    <!-- PATIENT DATA -->
     <div class="sec-hdr">Datos del Paciente</div>
     <div class="patient-grid">
       <div class="field-row" style="grid-column:span 2">
         <span class="field-label">Apellido y Nombre</span>
-        <input type="text" id="nombre" placeholder="Nombre completo del paciente">
+        <input type="text" id="nombre" placeholder="Nombre completo">
       </div>
       <div class="field-row">
         <span class="field-label">Seguro Médico</span>
@@ -296,64 +229,45 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
     </div>
     <div class="divider-bar"></div>
 
-    <!-- DETAIL TABLE -->
     <div class="sec-hdr">Detalle del Presupuesto</div>
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
-            <th style="width:24px">#</th>
-            <th class="col-left" style="width:20%">Concepto</th>
-            <th class="col-left" style="width:18%">Descripción / Detalle</th>
-            <th style="width:7%">Cant.</th>
-            <th style="width:12%">Precio Unit.</th>
-            <th style="width:11%">Total</th>
-            <th style="width:12%" title="0 = pasa todo al Seguro">C. Paciente</th>
-            <th style="width:11%" title="0 = pasa todo al Paciente">C. Seguro</th>
+            <th style="width:26px">#</th>
+            <th class="col-left" style="width:28%">Concepto</th>
+            <th class="col-left" style="width:22%">Descripción / Detalle</th>
+            <th style="width:9%">Cant.</th>
+            <th style="width:16%">Precio Unit.</th>
+            <th style="width:16%">Total</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
         <tfoot>
           <tr>
-            <td colspan="5" class="lbl">Totales</td>
+            <td colspan="5" class="lbl">Total General</td>
             <td id="gt-total">0</td>
-            <td id="gt-paciente" style="color:#FFD54F">0</td>
-            <td id="gt-seguro" style="color:#A5D6A7">0</td>
           </tr>
         </tfoot>
       </table>
     </div>
 
-    <!-- TOTALS SUMMARY BAR -->
-    <div class="totals-bar" id="totalsBar">
-      <div class="total-item highlight">
-        <label>💰 Total General</label>
-        <span id="tb-total">0</span>
-      </div>
-      <div class="total-divider"></div>
-      <div class="total-item">
-        <label>👤 Cargo Paciente</label>
-        <span id="tb-paciente" style="color:#FFD54F">0</span>
-      </div>
-      <div class="total-divider"></div>
-      <div class="total-item">
-        <label>🏥 Cargo Seguro</label>
-        <span id="tb-seguro" style="color:#A5D6A7">0</span>
-      </div>
+    <!-- TOTAL BAR -->
+    <div class="total-bar">
+      <label>💰 Total General a Pagar</label>
+      <span id="tb-total">0 Gs</span>
     </div>
 
-    <!-- OBS -->
     <div class="obs-wrap">
       <div class="obs-hdr">
         Observaciones / Referencia del Seguro
-        <span class="obs-note">⚠ Celular sin el cero inicial · Ej: 981 123 456 (no 0981...)</span>
+        <span class="obs-note">⚠ Celular sin el cero inicial · Ej: 981 123 456</span>
       </div>
-      <textarea id="obs" placeholder="Referencia del seguro, indicaciones u observaciones..."></textarea>
+      <textarea id="obs" placeholder="Observaciones, referencia del seguro..."></textarea>
     </div>
     <div class="footer-note">Este presupuesto es APROXIMADO y puede variar según la evolución del paciente. Válido por 30 días.</div>
 
-    <!-- ACTIONS -->
-    <div class="actions no-print">
+    <div class="actions">
       <button class="btn btn-save" onclick="savePresupuesto()">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V7l-4-4zm-5 16a3 3 0 110-6 3 3 0 010 6zm3-10H5V5h10v4z"/></svg>
         Guardar
@@ -368,9 +282,8 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
       </button>
       <button class="btn btn-clear" onclick="clearFormFields()">✕ Limpiar</button>
     </div>
-
-  </div><!-- /card -->
-</div><!-- /view-form -->
+  </div>
+</div>
 
 <!-- WA MODAL -->
 <div class="modal-overlay" id="waModal">
@@ -389,33 +302,17 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// STORAGE
-// ═══════════════════════════════════════════════════════
-const DB_KEY      = 'ipn_presupuestos_v1';
+const DB_KEY      = 'ipn_presupuestos_v2';
 const COUNTER_KEY = 'ipn_counter_v1';
 
-function loadDB()    { try { return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); } catch{ return []; } }
-function saveDB(d)   { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
+function loadDB()  { try{ return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); }catch{ return []; } }
+function saveDB(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
+function peekNextNro() { return parseInt(localStorage.getItem(COUNTER_KEY)||'0',10)+1; }
+function commitNro()   { const n=peekNextNro(); localStorage.setItem(COUNTER_KEY,String(n)); return n; }
 
-// Peek = just show the next number WITHOUT consuming it
-function peekNextNro() {
-  return parseInt(localStorage.getItem(COUNTER_KEY)||'0', 10) + 1;
-}
-// Commit = actually increment the counter (only called on SAVE)
-function commitNro() {
-  const n = peekNextNro();
-  localStorage.setItem(COUNTER_KEY, String(n));
-  return n;
-}
-
-// ═══════════════════════════════════════════════════════
-// ITEMS
-// ═══════════════════════════════════════════════════════
 const ITEMS = [
   "DERECHO OPERATORIO","MEDIC. Y DES. APROX. EN INTERNACIÓN",
   "MEDIC. Y DESC. APROX. EN CIRUGÍA","PENSIÓN p/hora","PENSIÓN p/día",
@@ -424,309 +321,164 @@ const ITEMS = [
   "PEDIATRA","PATÓLOGO","OTROS (especificar)"
 ];
 
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
-let currentNro   = null;   // null = new, not yet saved
+let currentNro   = null;
 let originalSnap = null;
 
-// ═══════════════════════════════════════════════════════
-// FORMAT HELPERS
-// ═══════════════════════════════════════════════════════
-// Format money: separator de miles, sin decimales
+// ─── FORMAT ──────────────────────────────────────────────
 function fmtMoney(n) {
-  if (n === null || n === undefined || isNaN(n)) return '0';
+  if (n===null||n===undefined||isNaN(n)) return '0';
   return Math.round(parseFloat(n)).toLocaleString('es-PY');
 }
-// Format quantity: 1 decimal
 function fmtQty(n) {
-  const v = parseFloat(n);
-  if (isNaN(v)) return '1.0';
-  return v.toFixed(1);
+  const v=parseFloat(n); return isNaN(v)?'1,0':v.toFixed(1).replace('.',',');
 }
-function esc(s) { return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function unformat(s) {
+  const str=String(s||'0').trim().replace(/[^0-9.,]/g,'');
+  if(!str) return 0;
+  if(str.includes(',')) return parseFloat(str.replace(/\./g,'').replace(',','.'))||0;
+  const dots=(str.match(/\./g)||[]).length;
+  if(dots===1){
+    const after=str.split('.')[1];
+    return (after&&after.length<=2) ? parseFloat(str)||0 : parseFloat(str.replace('.',''))||0;
+  }
+  return parseFloat(str.replace(/\./g,''))||0;
+}
+function cleanNumInput(inp){
+  inp.value=inp.value.replace(/[^0-9.,]/g,'');
+}
+function esc(s){ return String(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function v(id){ return document.getElementById(id)?.value||''; }
 
-// ═══════════════════════════════════════════════════════
-// VIEWS
-// ═══════════════════════════════════════════════════════
-function showView(v) {
-  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-  document.getElementById('view-'+v).classList.add('active');
-  if (v==='search') { document.getElementById('tab-search').classList.add('active'); renderList(); }
+// ─── VIEWS ───────────────────────────────────────────────
+function showView(vn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+vn).classList.add('active');
+  if(vn==='search'){document.getElementById('tab-search').classList.add('active');renderList();}
 }
-function goBack() {
-  if (isDirty() && !confirm('Hay cambios sin guardar. ¿Salir sin guardar?')) return;
+function goBack(){
+  if(isDirty()&&!confirm('Cambios sin guardar. ¿Salir?')) return;
   showView('search');
 }
 
-// ═══════════════════════════════════════════════════════
-// TABLE BUILD
-// ═══════════════════════════════════════════════════════
-function buildTable(rows) {
-  const tbody = document.getElementById('tbody');
-  tbody.innerHTML = '';
-  const data = rows || ITEMS.map(item => ({ concepto: item, detalle:'', qty:1, price:0, cp:0, cs:0 }));
-
-  data.forEach((row, i) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
+// ─── TABLE ───────────────────────────────────────────────
+function buildTable(rows){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  const data=rows||ITEMS.map(item=>({concepto:item,detalle:'',qty:1,price:0}));
+  data.forEach((row,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
       <td class="idx">${i+1}</td>
-      <td><input class="concepto-input" type="text" value="${esc(row.concepto)}" placeholder="Concepto"></td>
+      <td><input class="concepto-input" type="text" value="${esc(row.concepto)}"></td>
       <td><input class="detalle-input"  type="text" value="${esc(row.detalle||'')}"></td>
-      <td><input class="qty-input"   type="text" inputmode="decimal" value="${fmtQty(row.qty)}" placeholder="1.0"></td>
-      <td><input class="price-input" type="text" inputmode="numeric" value="${fmtMoney(row.price)}" placeholder="0"></td>
+      <td><input class="qty-input"   type="text" inputmode="decimal" value="${fmtQty(row.qty||1)}"></td>
+      <td><input class="price-input" type="text" inputmode="numeric" value="${fmtMoney(row.price||0)}"></td>
       <td class="tc-total" id="rt-${i}">0</td>
-      <td class="tc-cp"><input class="cp-input" type="text" inputmode="numeric" value="${fmtMoney(row.cp)}" placeholder="0"></td>
-      <td class="tc-cs"><input class="cs-input" type="text" inputmode="numeric" value="${fmtMoney(row.cs)}" placeholder="0"></td>
     `;
     tbody.appendChild(tr);
   });
 
-  // ── Events ───────────────────────────────────────────
-  tbody.querySelectorAll('.qty-input,.price-input').forEach(inp => {
-    inp.addEventListener('input', () => {
-      cleanNumericInput(inp);
-      const i = getRowIdx(inp);
-      recalcRow(i);
-      updateGT();
+  // qty and price: update total on every keystroke
+  tbody.querySelectorAll('.qty-input,.price-input').forEach(inp=>{
+    inp.addEventListener('input',()=>{ cleanNumInput(inp); recalcRow(getRowIdx(inp)); markDirty(); });
+    inp.addEventListener('blur', ()=>{ formatBlur(inp,inp.classList.contains('qty-input')); recalcRow(getRowIdx(inp)); });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();focusNext(inp);} });
+  });
+
+  tbody.querySelectorAll('.concepto-input,.detalle-input').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const p=inp.selectionStart; inp.value=inp.value.toUpperCase();
+      try{inp.setSelectionRange(p,p);}catch(e){}
       markDirty();
     });
-    inp.addEventListener('blur', () => {
-      formatOnBlur(inp, inp.classList.contains('qty-input'));
-      const i = getRowIdx(inp);
-      recalcRow(i);
-      updateGT();
-    });
-  });
-
-  tbody.querySelectorAll('.cp-input').forEach((inp, i) => {
-    inp.addEventListener('input', () => {
-      cleanNumericInput(inp);
-      inp.dataset.touched = '1';
-      const raw = unformat(inp.value);
-      if (raw === 0) {
-        const total = getRowTotal(i);
-        const csInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cs-input');
-        csInp.value = fmtMoney(total);
-        csInp.dataset.touched = '1';
-      }
-      updateGT(); markDirty();
-    });
-    inp.addEventListener('blur', () => {
-      formatOnBlur(inp, false);
-      updateGT();
-    });
-  });
-
-  tbody.querySelectorAll('.cs-input').forEach((inp, i) => {
-    inp.addEventListener('input', () => {
-      cleanNumericInput(inp);
-      inp.dataset.touched = '1';
-      const raw = unformat(inp.value);
-      if (raw === 0) {
-        const total = getRowTotal(i);
-        const cpInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cp-input');
-        cpInp.value = fmtMoney(total);
-        cpInp.dataset.touched = '1';
-      }
-      updateGT(); markDirty();
-    });
-    inp.addEventListener('blur', () => {
-      formatOnBlur(inp, false);
-      updateGT();
-    });
-  });
-
-  tbody.querySelectorAll('.concepto-input,.detalle-input').forEach(inp => {
-    inp.addEventListener('input', () => {
-      const pos = inp.selectionStart;
-      inp.value = inp.value.toUpperCase();
-      try { inp.setSelectionRange(pos,pos); } catch(e){}
-      markDirty();
-    });
-  });
-
-  // ── Enter navigation ─────────────────────────────────
-  tbody.querySelectorAll('input').forEach(inp => {
-    inp.addEventListener('keydown', e => {
-      if (e.key==='Enter') { e.preventDefault(); focusNext(inp); }
-    });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();focusNext(inp);} });
   });
 
   updateAllRows();
 }
 
-// ─── Numeric helpers ─────────────────────────────────────
-function unformat(s) {
-  // Paraguay format: 1.500.000 (dot=thousands) or 1,5 (comma=decimal)
-  // qty uses dot as decimal: 1.5
-  const str = String(s || '0').trim().replace(/[^0-9.,]/g,'');
-  if (!str) return 0;
-  // Has comma -> dot=thousands, comma=decimal
-  if (str.includes(',')) {
-    return parseFloat(str.replace(/\./g,'').replace(',','.')) || 0;
-  }
-  const dotCount = (str.match(/\./g)||[]).length;
-  if (dotCount === 1) {
-    const afterDot = str.split('.')[1];
-    // 1-2 digits after dot = decimal (1.5, 1.50); 3 digits = thousands (300.000)
-    return afterDot && afterDot.length <= 2
-      ? parseFloat(str) || 0
-      : parseFloat(str.replace('.','')) || 0;
-  } else if (dotCount > 1) {
-    // multiple dots = all thousands separators
-    return parseFloat(str.replace(/\./g,'')) || 0;
-  }
-  return parseFloat(str) || 0;
-}
-function cleanNumericInput(inp) {
-  // Allow only digits, dots, commas
-  inp.value = inp.value.replace(/[^0-9.,]/g,'');
-}
-function formatOnBlur(inp, isQty) {
-  const raw = unformat(inp.value);
-  inp.value = isQty ? fmtQty(raw) : fmtMoney(raw);
-}
-function getRowIdx(inp) {
-  return [...document.querySelectorAll('#tbody tr')].indexOf(inp.closest('tr'));
-}
-function getRowTotal(i) {
-  const tr = document.querySelectorAll('#tbody tr')[i];
-  const qty   = unformat(tr.querySelector('.qty-input').value);
-  const price = unformat(tr.querySelector('.price-input').value);
-  return qty * price;
-}
+function getRowIdx(inp){ return [...document.querySelectorAll('#tbody tr')].indexOf(inp.closest('tr')); }
 
-// ─── Recalc a single row ─────────────────────────────────
-function recalcRow(i) {
-  if (i < 0) return;
-  const tr     = document.querySelectorAll('#tbody tr')[i];
-  const total  = getRowTotal(i);
-  const cpInp  = tr.querySelector('.cp-input');
-  const csInp  = tr.querySelector('.cs-input');
-
-  document.getElementById(`rt-${i}`).textContent = fmtMoney(total);
-
-  const cpTouched = !!cpInp.dataset.touched;
-  const csTouched = !!csInp.dataset.touched;
-  const cpVal = unformat(cpInp.value);
-  const csVal = unformat(csInp.value);
-
-  if (!cpTouched && !csTouched) {
-    // Default: paciente takes all
-    cpInp.value = fmtMoney(total);
-    csInp.value = fmtMoney(0);
-  } else if (cpTouched && cpVal === 0) {
-    csInp.value = fmtMoney(total);
-    csInp.dataset.touched = '1';
-  } else if (csTouched && csVal === 0) {
-    cpInp.value = fmtMoney(total);
-    cpInp.dataset.touched = '1';
-  } else {
-    // Keep whatever the user typed; don't override
-  }
-}
-
-function updateAllRows() {
-  document.querySelectorAll('#tbody tr').forEach((tr, i) => recalcRow(i));
+function recalcRow(i){
+  if(i<0) return;
+  const tr=document.querySelectorAll('#tbody tr')[i];
+  const qty  =unformat(tr.querySelector('.qty-input').value);
+  const price=unformat(tr.querySelector('.price-input').value);
+  const total=qty*price;
+  document.getElementById(`rt-${i}`).textContent=fmtMoney(total);
   updateGT();
 }
 
-function updateGT() {
-  let gt=0, gp=0, gs=0;
-  document.querySelectorAll('#tbody tr').forEach((tr,i) => {
-    gt += getRowTotal(i);
-    gp += unformat(tr.querySelector('.cp-input').value);
-    gs += unformat(tr.querySelector('.cs-input').value);
+function updateAllRows(){
+  document.querySelectorAll('#tbody tr').forEach((_,i)=>recalcRow(i));
+}
+
+function updateGT(){
+  let gt=0;
+  document.querySelectorAll('#tbody tr').forEach((tr,i)=>{
+    const qty  =unformat(tr.querySelector('.qty-input').value);
+    const price=unformat(tr.querySelector('.price-input').value);
+    gt+=qty*price;
   });
-  document.getElementById('gt-total').textContent    = fmtMoney(gt);
-  document.getElementById('gt-paciente').textContent = fmtMoney(gp);
-  document.getElementById('gt-seguro').textContent   = fmtMoney(gs);
-  // also update totals bar
-  document.getElementById('tb-total').textContent    = fmtMoney(gt) + ' Gs';
-  document.getElementById('tb-paciente').textContent = fmtMoney(gp) + ' Gs';
-  document.getElementById('tb-seguro').textContent   = fmtMoney(gs) + ' Gs';
+  document.getElementById('gt-total').textContent=fmtMoney(gt);
+  document.getElementById('tb-total').textContent=fmtMoney(gt)+' Gs';
 }
 
-// ─── Enter navigation ────────────────────────────────────
-function allFocusable() {
-  return [...document.querySelectorAll(
-    '#nombre,#seguro,#plan,#celular,#email,#padre,#cirugia,#cirujano,#tbody input,#obs'
-  )].filter(el => !el.disabled && el.offsetParent !== null);
-}
-function focusNext(current) {
-  const list = allFocusable();
-  const idx  = list.indexOf(current);
-  if (idx >= 0 && idx < list.length-1) list[idx+1].focus();
+function formatBlur(inp,isQty){
+  const raw=unformat(inp.value);
+  inp.value=isQty?fmtQty(raw):fmtMoney(raw);
 }
 
-// ═══════════════════════════════════════════════════════
-// DIRTY DETECTION
-// ═══════════════════════════════════════════════════════
-function v(id) { return document.getElementById(id)?.value||''; }
+function allFocusable(){
+  return [...document.querySelectorAll('#nombre,#seguro,#plan,#celular,#email,#padre,#cirugia,#cirujano,#tbody input,#obs')]
+    .filter(el=>!el.disabled&&el.offsetParent!==null);
+}
+function focusNext(cur){
+  const list=allFocusable(); const i=list.indexOf(cur);
+  if(i>=0&&i<list.length-1) list[i+1].focus();
+}
 
-function collectFormData() {
-  const rows = [];
-  document.querySelectorAll('#tbody tr').forEach(tr => {
+// ─── DIRTY ───────────────────────────────────────────────
+function collectFormData(){
+  const rows=[];
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
     rows.push({
-      concepto: tr.querySelector('.concepto-input').value,
-      detalle:  tr.querySelector('.detalle-input').value,
-      qty:   unformat(tr.querySelector('.qty-input').value),
-      price: unformat(tr.querySelector('.price-input').value),
-      cp:    unformat(tr.querySelector('.cp-input').value),
-      cs:    unformat(tr.querySelector('.cs-input').value)
+      concepto:tr.querySelector('.concepto-input').value,
+      detalle: tr.querySelector('.detalle-input').value,
+      qty:  unformat(tr.querySelector('.qty-input').value),
+      price:unformat(tr.querySelector('.price-input').value)
     });
   });
-  return { nro:currentNro, nombre:v('nombre'), seguro:v('seguro'), plan:v('plan'),
-    celular:v('celular'), email:v('email'), padre:v('padre'),
-    cirugia:v('cirugia'), cirujano:v('cirujano'), fecha:v('fecha'), obs:v('obs'), rows };
+  return{nro:currentNro,nombre:v('nombre'),seguro:v('seguro'),plan:v('plan'),
+    celular:v('celular'),email:v('email'),padre:v('padre'),
+    cirugia:v('cirugia'),cirujano:v('cirujano'),fecha:v('fecha'),obs:v('obs'),rows};
 }
+function isDirty(){ return originalSnap?JSON.stringify(collectFormData())!==JSON.stringify(originalSnap):false; }
+function markDirty(){ if(originalSnap) document.getElementById('modBadge').style.display=isDirty()?'flex':'none'; }
 
-function isDirty() {
-  if (!originalSnap) return false;
-  return JSON.stringify(collectFormData()) !== JSON.stringify(originalSnap);
-}
-function markDirty() {
-  if (!originalSnap) return;
-  document.getElementById('modBadge').style.display = isDirty() ? 'flex' : 'none';
-}
-
-// ═══════════════════════════════════════════════════════
-// PATIENT FIELD LISTENERS
-// ═══════════════════════════════════════════════════════
-function attachPatientListeners() {
-  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','fecha','obs'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener('input', () => {
-      if (el.tagName==='INPUT' && el.type==='text') {
-        const pos = el.selectionStart;
-        el.value = el.value.toUpperCase();
-        try { el.setSelectionRange(pos,pos); } catch(e){}
-      } else if (el.tagName==='TEXTAREA') {
-        el.value = el.value.toUpperCase();
+function attachPatientListeners(){
+  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','fecha','obs'].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    el.addEventListener('input',()=>{
+      if(el.type==='text'||el.tagName==='TEXTAREA'){
+        const p=el.selectionStart; el.value=el.value.toUpperCase();
+        try{el.setSelectionRange(p,p);}catch(e){}
       }
       markDirty();
     });
-    el.addEventListener('keydown', e => {
-      if (e.key==='Enter') { e.preventDefault(); focusNext(el); }
-    });
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();focusNext(el);} });
   });
 }
 
-// ═══════════════════════════════════════════════════════
-// NEW / LOAD
-// ═══════════════════════════════════════════════════════
-function initNew() {
-  // Show next number WITHOUT committing it
-  const preview = peekNextNro();
-  currentNro   = null;
-  originalSnap = null;
-  document.getElementById('nroDisplay').textContent = String(preview).padStart(4,'0');
-  document.getElementById('formTitle').textContent  = 'Nuevo Presupuesto #' + String(preview).padStart(4,'0');
-  document.getElementById('modBadge').style.display    = 'none';
-  document.getElementById('modDateWrap').style.display = 'none';
+// ─── NEW / LOAD ───────────────────────────────────────────
+function initNew(){
+  const preview=peekNextNro();
+  currentNro=null; originalSnap=null;
+  document.getElementById('nroDisplay').textContent=String(preview).padStart(4,'0');
+  document.getElementById('formTitle').textContent='Nuevo Presupuesto #'+String(preview).padStart(4,'0');
+  document.getElementById('modBadge').style.display='none';
+  document.getElementById('modDateWrap').style.display='none';
   clearFormFields(false);
   buildTable();
   attachPatientListeners();
@@ -735,131 +487,71 @@ function initNew() {
   document.getElementById('tab-search').classList.remove('active');
 }
 
-function loadPresupuesto(nro) {
-  const db   = loadDB();
-  const data = db.find(p => p.nro===nro);
-  if (!data) return;
-  currentNro = nro;
-  document.getElementById('nroDisplay').textContent = String(nro).padStart(4,'0');
-  document.getElementById('formTitle').textContent  = 'Presupuesto #' + String(nro).padStart(4,'0');
+function loadPresupuesto(nro){
+  const db=loadDB(); const data=db.find(p=>p.nro===nro); if(!data) return;
+  currentNro=nro;
+  document.getElementById('nroDisplay').textContent=String(nro).padStart(4,'0');
+  document.getElementById('formTitle').textContent='Presupuesto #'+String(nro).padStart(4,'0');
   ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','fecha','obs']
-    .forEach(id => { const el=document.getElementById(id); if(el) el.value=data[id]||''; });
-  const badge = document.getElementById('modBadge');
-  const mwrap = document.getElementById('modDateWrap');
-  const mdate = document.getElementById('modDateDisplay');
-  if (data.modifiedAt) {
-    badge.style.display='flex'; mwrap.style.display='block'; mdate.textContent=data.modifiedAt;
-  } else {
-    badge.style.display='none'; mwrap.style.display='none';
-  }
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=data[id]||''; });
+  const badge=document.getElementById('modBadge');
+  const mwrap=document.getElementById('modDateWrap');
+  const mdate=document.getElementById('modDateDisplay');
+  if(data.modifiedAt){ badge.style.display='flex'; mwrap.style.display='block'; mdate.textContent=data.modifiedAt; }
+  else{ badge.style.display='none'; mwrap.style.display='none'; }
   buildTable(data.rows);
-  // Restore touched state and formatted values
-  document.querySelectorAll('#tbody tr').forEach((tr,i) => {
-    const r = data.rows[i];
-    if (!r) return;
-    const cpInp = tr.querySelector('.cp-input');
-    const csInp = tr.querySelector('.cs-input');
-    cpInp.value = fmtMoney(r.cp);
-    csInp.value = fmtMoney(r.cs);
-    if (r.cp > 0) cpInp.dataset.touched='1';
-    if (r.cs > 0) csInp.dataset.touched='1';
-    tr.querySelector('.qty-input').value   = fmtQty(r.qty);
-    tr.querySelector('.price-input').value = fmtMoney(r.price);
-    document.getElementById(`rt-${i}`).textContent = fmtMoney(r.qty * r.price);
+  document.querySelectorAll('#tbody tr').forEach((tr,i)=>{
+    const r=data.rows[i]; if(!r) return;
+    tr.querySelector('.qty-input').value  =fmtQty(r.qty||1);
+    tr.querySelector('.price-input').value=fmtMoney(r.price||0);
   });
-  updateGT();
-  originalSnap = JSON.parse(JSON.stringify(collectFormData()));
+  updateAllRows();
+  originalSnap=JSON.parse(JSON.stringify(collectFormData()));
   attachPatientListeners();
   showView('form');
 }
 
-// ═══════════════════════════════════════════════════════
-// SAVE
-// ═══════════════════════════════════════════════════════
-function savePresupuesto() {
-  const isNew = (currentNro === null);
-
-  // Commit the number only on first save
-  if (isNew) {
-    currentNro = commitNro();
-    document.getElementById('nroDisplay').textContent = String(currentNro).padStart(4,'0');
-    document.getElementById('formTitle').textContent  = 'Presupuesto #' + String(currentNro).padStart(4,'0');
-  }
-
-  const data = collectFormData();
-  const db   = loadDB();
-  const idx  = db.findIndex(p => p.nro===currentNro);
-  const now  = new Date();
-  const stamp= `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  if (idx >= 0) {
-    data.createdAt  = db[idx].createdAt;
-    data.modifiedAt = stamp;
-    data.isModified = true;
-    db[idx] = data;
-  } else {
-    data.createdAt  = stamp;
-    data.modifiedAt = null;
-    data.isModified = false;
-    db.push(data);
-  }
+// ─── SAVE ────────────────────────────────────────────────
+function savePresupuesto(){
+  const isNew=(currentNro===null);
+  if(isNew){ currentNro=commitNro(); document.getElementById('nroDisplay').textContent=String(currentNro).padStart(4,'0'); document.getElementById('formTitle').textContent='Presupuesto #'+String(currentNro).padStart(4,'0'); }
+  const data=collectFormData();
+  const db=loadDB(); const idx=db.findIndex(p=>p.nro===currentNro);
+  const now=new Date();
+  const stamp=`${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if(idx>=0){ data.createdAt=db[idx].createdAt; data.modifiedAt=stamp; data.isModified=true; db[idx]=data; }
+  else{ data.createdAt=stamp; data.modifiedAt=null; data.isModified=false; db.push(data); }
   saveDB(db);
-
-  if (!isNew) {
-    document.getElementById('modBadge').style.display    = 'flex';
-    document.getElementById('modDateWrap').style.display = 'block';
-    document.getElementById('modDateDisplay').textContent = stamp;
-  } else {
-    document.getElementById('modBadge').style.display    = 'none';
-    document.getElementById('modDateWrap').style.display = 'none';
-  }
-
-  originalSnap = JSON.parse(JSON.stringify(collectFormData()));
+  if(!isNew){ document.getElementById('modBadge').style.display='flex'; document.getElementById('modDateWrap').style.display='block'; document.getElementById('modDateDisplay').textContent=stamp; }
+  else{ document.getElementById('modBadge').style.display='none'; document.getElementById('modDateWrap').style.display='none'; }
+  originalSnap=JSON.parse(JSON.stringify(collectFormData()));
   updateNavCounter();
-  showToast('✅ Presupuesto guardado', 'green');
+  showToast('✅ Presupuesto guardado','green');
 }
 
-// ═══════════════════════════════════════════════════════
-// CLEAR
-// ═══════════════════════════════════════════════════════
-function clearFormFields(ask=true) {
-  if (ask && !confirm('¿Limpiar el formulario?')) return;
-  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','obs'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
+// ─── CLEAR ───────────────────────────────────────────────
+function clearFormFields(ask=true){
+  if(ask&&!confirm('¿Limpiar el formulario?')) return;
+  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   const t=new Date();
-  document.getElementById('fecha').value=
-    `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
+  document.getElementById('fecha').value=`${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
 }
 
-// ═══════════════════════════════════════════════════════
-// LIST / SEARCH
-// ═══════════════════════════════════════════════════════
-function renderList() {
-  const q      = (document.getElementById('searchInput').value||'').toLowerCase();
-  const filter = document.getElementById('filterStatus').value;
-  const db     = loadDB();
-  const list   = document.getElementById('presupList');
-  if (!db.length) {
-    list.innerHTML='<div class="empty-state"><p>No hay presupuestos guardados.<br>Creá uno nuevo con el botón ➕</p></div>';
-    return;
-  }
-  let filtered = db.filter(p => {
-    const match = !q || String(p.nro).includes(q) ||
-      (p.nombre||'').toLowerCase().includes(q) || (p.cirugia||'').toLowerCase().includes(q) ||
-      (p.seguro||'').toLowerCase().includes(q)  || (p.cirujano||'').toLowerCase().includes(q);
-    const st = !filter||(filter==='modified'&&p.isModified)||(filter==='original'&&!p.isModified);
-    return match && st;
+// ─── LIST ────────────────────────────────────────────────
+function renderList(){
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  const filter=document.getElementById('filterStatus').value;
+  const db=loadDB(); const list=document.getElementById('presupList');
+  if(!db.length){ list.innerHTML='<div class="empty-state"><p>No hay presupuestos guardados.<br>Creá uno nuevo con ➕</p></div>'; return; }
+  let filtered=db.filter(p=>{
+    const match=!q||String(p.nro).includes(q)||(p.nombre||'').toLowerCase().includes(q)||(p.cirugia||'').toLowerCase().includes(q)||(p.seguro||'').toLowerCase().includes(q);
+    const st=!filter||(filter==='modified'&&p.isModified)||(filter==='original'&&!p.isModified);
+    return match&&st;
   }).sort((a,b)=>b.nro-a.nro);
-  if (!filtered.length) {
-    list.innerHTML=`<div class="empty-state"><p>Sin resultados para "<b>${q}</b>"</p></div>`;
-    return;
-  }
-  list.innerHTML = '<div class="presup-list">' + filtered.map(p => {
-    const gt = (p.rows||[]).reduce((s,r)=>s+(r.qty||0)*(r.price||0),0);
-    const mb = p.isModified
-      ? `<span class="badge badge-mod">✏️ Modificado · ${p.modifiedAt||''}</span>`
-      : `<span class="badge badge-new">✔ Original</span>`;
+  if(!filtered.length){ list.innerHTML=`<div class="empty-state"><p>Sin resultados</p></div>`; return; }
+  list.innerHTML='<div class="presup-list">'+filtered.map(p=>{
+    const gt=(p.rows||[]).reduce((s,r)=>s+(r.qty||0)*(r.price||0),0);
+    const mb=p.isModified?`<span class="badge badge-mod">✏️ Modificado · ${p.modifiedAt||''}</span>`:`<span class="badge badge-new">✔ Original</span>`;
     return `<div class="presup-card ${p.isModified?'modified':''}" onclick="loadPresupuesto(${p.nro})">
       <div class="presup-nro ${p.isModified?'modified':''}">${String(p.nro).padStart(4,'0')}</div>
       <div class="presup-info">
@@ -873,253 +565,192 @@ function renderList() {
         <div class="date" style="font-size:10px;color:#90A4AE">Creado: ${p.createdAt||'—'}</div>
       </div>
     </div>`;
-  }).join('') + '</div>';
+  }).join('')+'</div>';
 }
+function updateNavCounter(){ const n=loadDB().length; document.getElementById('navCounter').textContent=n+' presupuesto'+(n!==1?'s':''); }
 
-function updateNavCounter() {
-  const n = loadDB().length;
-  document.getElementById('navCounter').textContent = n + ' presupuesto' + (n!==1?'s':'');
-}
+// ─── PDF ─────────────────────────────────────────────────
+async function exportPDF(){
+  const nro     =String(currentNro||peekNextNro()).padStart(4,'0');
+  const nombre  =v('nombre')||'—';
+  const seguro  =v('seguro')||'—';
+  const plan    =v('plan')||'—';
+  const cirugia =v('cirugia')||'—';
+  const cirujano=v('cirujano')||'—';
+  const fecha   =v('fecha')||'—';
+  const obs     =v('obs');
+  const gt      =document.getElementById('gt-total').textContent;
+  const isModified=document.getElementById('modBadge').style.display!=='none';
+  const modInfo =document.getElementById('modDateDisplay').textContent;
 
-// ═══════════════════════════════════════════════════════
-// PDF EXPORT
-// ═══════════════════════════════════════════════════════
-async function exportPDF() {
-  const nro      = String(currentNro||peekNextNro()).padStart(4,'0');
-  const nombre   = v('nombre') || '—';
-  const seguro   = v('seguro') || '—';
-  const plan     = v('plan')   || '—';
-  const cirugia  = v('cirugia')|| '—';
-  const cirujano = v('cirujano')|| '—';
-  const fecha    = v('fecha')  || '—';
-  const obs      = v('obs');
-  const gt  = document.getElementById('gt-total').textContent;
-  const gp  = document.getElementById('gt-paciente').textContent;
-  const gs  = document.getElementById('gt-seguro').textContent;
-  const modInfo = document.getElementById('modDateDisplay').textContent;
-  const isModified = document.getElementById('modBadge').style.display !== 'none';
-
-  // Build rows HTML
-  let rowsHtml = '';
-  let hasRows = false;
-  document.querySelectorAll('#tbody tr').forEach((tr, i) => {
-    const qty   = unformat(tr.querySelector('.qty-input').value);
-    const price = unformat(tr.querySelector('.price-input').value);
-    const total = qty * price;
-    const concepto = tr.querySelector('.concepto-input').value;
-    const detalle  = tr.querySelector('.detalle-input').value;
-    const cp = unformat(tr.querySelector('.cp-input').value);
-    const cs = unformat(tr.querySelector('.cs-input').value);
-    const bg = i % 2 === 0 ? '#EBF5FB' : '#FFFFFF';
-    rowsHtml += `<tr style="background:${bg}">
-      <td style="text-align:center;color:#90A4AE;font-size:9px;font-weight:700;padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0">${i+1}</td>
-      <td style="padding:3px 6px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:9px;font-weight:600;text-transform:uppercase">${concepto}</td>
-      <td style="padding:3px 6px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:8.5px;color:#546E7A;font-style:italic;text-transform:uppercase">${detalle}</td>
-      <td style="padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtQty(qty)}</td>
-      <td style="padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtMoney(price)}</td>
-      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;background:#E8F8F5">${fmtMoney(total)}</td>
-      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;color:#E65100;background:#FFF8E1">${fmtMoney(cp)}</td>
-      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;color:#2E7D32;background:#E8F5E9">${fmtMoney(cs)}</td>
+  let rowsHtml='';
+  document.querySelectorAll('#tbody tr').forEach((tr,i)=>{
+    const qty  =unformat(tr.querySelector('.qty-input').value);
+    const price=unformat(tr.querySelector('.price-input').value);
+    const total=qty*price;
+    const concepto=tr.querySelector('.concepto-input').value;
+    const detalle =tr.querySelector('.detalle-input').value;
+    const bg=i%2===0?'#EBF5FB':'#FFFFFF';
+    rowsHtml+=`<tr style="background:${bg}">
+      <td style="text-align:center;color:#90A4AE;font-size:9px;font-weight:700;padding:4px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0">${i+1}</td>
+      <td style="padding:4px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:9px;font-weight:600;text-transform:uppercase">${concepto}</td>
+      <td style="padding:4px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:8.5px;color:#546E7A;font-style:italic;text-transform:uppercase">${detalle}</td>
+      <td style="padding:4px 6px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtQty(qty)}</td>
+      <td style="padding:4px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtMoney(price)}</td>
+      <td style="padding:4px 8px;border-bottom:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:800;background:#E8F8F5;color:#1B5E20">${fmtMoney(total)}</td>
     </tr>`;
-    if (total > 0) hasRows = true;
   });
 
-  const obsHtml = obs ? `
-    <div style="margin-top:0">
-      <div style="background:#1976D2;color:white;padding:5px 14px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase">
-        OBSERVACIONES / REFERENCIA DEL SEGURO
-      </div>
-      <div style="border:1px solid #B0BEC5;border-top:none;padding:8px 14px;font-size:9px;color:#212121;background:#FAFAFA;text-transform:uppercase;min-height:28px">${obs}</div>
-    </div>` : '';
+  const obsSection=obs?`
+    <div style="background:#1976D2;color:white;padding:5px 14px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase">OBSERVACIONES</div>
+    <div style="border:1px solid #B0BEC5;border-top:none;padding:8px 14px;font-size:9px;background:#FAFAFA;text-transform:uppercase;min-height:28px">${obs}</div>`:'';
 
-  const modHtml = isModified ? `<div style="font-size:8px;color:#E65100;font-weight:700;margin-top:2px">✏ MODIFICADO: ${modInfo}</div>` : '';
+  const modSection=isModified?`<div style="font-size:8px;color:#E65100;font-weight:700;margin-top:3px">✏ MODIFICADO: ${modInfo}</div>`:'';
 
-  const LOGO = 'LOGO_PLACEHOLDER';
+  const LOGO=document.querySelector('.doc-logo img').src.split('base64,')[1];
 
-  const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:white;color:#212121;}
-    table{border-collapse:collapse;width:100%;}
-  </style></head><body>
-  <div style="background:white;padding:0;font-family:'Inter',sans-serif;">
+  const pdfDoc=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Inter',sans-serif;background:white;}table{border-collapse:collapse;width:100%;}</style>
+  </head><body><div style="background:white;font-family:'Inter',sans-serif;">
 
-    <!-- HEADER -->
-    <div style="display:flex;align-items:center;gap:14px;padding:10px 16px 0;border-bottom:3px solid #1565C0;background:white">
-      <img src="data:image/png;base64,${LOGO}" style="width:60px;height:60px;object-fit:contain">
-      <div style="flex:1;text-align:center;padding-bottom:10px">
-        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:#0D47A1;text-transform:uppercase;letter-spacing:0.5px">Instituto Privado del Niño y Adolescente</div>
-        <div style="font-size:8px;color:#78909C;font-weight:500;letter-spacing:3px;text-transform:uppercase;margin-top:3px">Presupuesto Quirúrgico Aproximado</div>
-      </div>
-      <div style="min-width:155px;padding-bottom:10px">
-        <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px">N° Presupuesto ⚙ auto</div>
-        <div style="border:1.5px solid #1976D2;border-radius:4px;padding:3px 8px;font-size:15px;font-family:'Montserrat',sans-serif;font-weight:800;color:#0D47A1;background:#E3F2FD;letter-spacing:2px;margin-top:2px">${nro}</div>
-        <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px;margin-top:5px">Fecha</div>
-        <div style="border:1px solid #B0BEC5;border-radius:4px;padding:3px 8px;font-size:11px;background:#E3F2FD;margin-top:2px">${fecha}</div>
-        ${modHtml}
-      </div>
+  <!-- HEADER -->
+  <div style="display:flex;align-items:center;gap:14px;padding:10px 18px 0;border-bottom:3px solid #1565C0">
+    <img src="data:image/png;base64,${LOGO}" style="width:58px;height:58px;object-fit:contain">
+    <div style="flex:1;text-align:center;padding-bottom:10px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;color:#0D47A1;text-transform:uppercase">Instituto Privado del Niño y Adolescente</div>
+      <div style="font-size:8px;color:#78909C;letter-spacing:3px;text-transform:uppercase;margin-top:3px">Presupuesto Quirúrgico Aproximado</div>
     </div>
-
-    <!-- DATOS PACIENTE -->
-    <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px">Datos del Paciente</div>
-    <table style="border-bottom:2px solid #1565C0">
-      <tr>
-        <td colspan="4" style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px">
-          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Apellido y Nombre</span>
-          <span style="font-size:10px;font-weight:600">${nombre}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px;width:50%">
-          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Seguro Médico</span>
-          <span style="font-size:10px">${seguro}</span>
-        </td>
-        <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;padding:5px 10px;width:50%">
-          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Plan</span>
-          <span style="font-size:10px">${plan}</span>
-        </td>
-      </tr>
-      <tr>
-        <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px">
-          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Cirugía</span>
-          <span style="font-size:10px">${cirugia}</span>
-        </td>
-        <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;padding:5px 10px">
-          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Cirujano</span>
-          <span style="font-size:10px">${cirujano}</span>
-        </td>
-      </tr>
-    </table>
-
-    <div style="height:4px;background:#0D47A1"></div>
-
-    <!-- DETALLE -->
-    <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px">Detalle del Presupuesto</div>
-    <table>
-      <thead>
-        <tr style="background:#0D47A1;color:white">
-          <th style="width:22px;padding:7px 4px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.12)">#</th>
-          <th style="padding:7px 6px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:22%">Concepto</th>
-          <th style="padding:7px 6px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:16%">Descripción</th>
-          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.12);width:7%">Cant.</th>
-          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:13%">Precio Unit.</th>
-          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:12%">Total</th>
-          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:13%">C. Paciente</th>
-          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;width:12%">C. Seguro</th>
-        </tr>
-      </thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-
-    <!-- TOTALS BAR -->
-    <div style="display:flex;background:#0D47A1;color:white;padding:8px 16px;gap:0;align-items:center">
-      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.2);padding-right:16px">
-        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">💰 Total General</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;margin-top:2px">${gt} Gs</div>
-      </div>
-      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.2);padding:0 16px">
-        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">👤 Cargo Paciente</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#FFD54F;margin-top:2px">${gp} Gs</div>
-      </div>
-      <div style="flex:1;text-align:center;padding-left:16px">
-        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">🏥 Cargo Seguro</div>
-        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#A5D6A7;margin-top:2px">${gs} Gs</div>
-      </div>
+    <div style="min-width:150px;padding-bottom:10px">
+      <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px">N° Presupuesto</div>
+      <div style="border:1.5px solid #1976D2;border-radius:4px;padding:3px 8px;font-size:16px;font-family:'Montserrat',sans-serif;font-weight:800;color:#0D47A1;background:#E3F2FD;letter-spacing:2px;margin-top:2px">${nro}</div>
+      <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px;margin-top:5px">Fecha</div>
+      <div style="border:1px solid #B0BEC5;border-radius:4px;padding:3px 8px;font-size:11px;background:#E3F2FD;margin-top:2px">${fecha}</div>
+      ${modSection}
     </div>
-
-    ${obsHtml}
-
-    <!-- FOOTER -->
-    <div style="text-align:center;font-size:8px;color:#78909C;font-style:italic;padding:5px 16px;background:#E3F2FD;border-top:1px solid #BBDEFB">
-      Este presupuesto es APROXIMADO y puede variar según la evolución del paciente. Válido por 30 días.
-    </div>
-
   </div>
-  </body></html>`;
 
-  const logoB64 = document.querySelector('.doc-logo img').src.split('base64,')[1];
-  const finalHtml = pdfHtml.replace('LOGO_PLACEHOLDER', logoB64);
+  <!-- PACIENTE -->
+  <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 18px">Datos del Paciente</div>
+  <table style="border-bottom:2px solid #1565C0">
+    <tr>
+      <td colspan="4" style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;padding:5px 12px">
+        <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;margin-right:8px">Apellido y Nombre</span>
+        <span style="font-size:11px;font-weight:600">${nombre}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 12px;width:50%">
+        <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;margin-right:8px">Seguro Médico</span><span style="font-size:10px">${seguro}</span>
+      </td>
+      <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;padding:5px 12px;width:50%">
+        <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;margin-right:8px">Plan</span><span style="font-size:10px">${plan}</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 12px">
+        <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;margin-right:8px">Cirugía</span><span style="font-size:10px">${cirugia}</span>
+      </td>
+      <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;padding:5px 12px">
+        <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;margin-right:8px">Cirujano</span><span style="font-size:10px">${cirujano}</span>
+      </td>
+    </tr>
+  </table>
+  <div style="height:4px;background:#0D47A1"></div>
 
-  const tmpDiv = document.createElement('div');
-  tmpDiv.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:white;';
-  tmpDiv.innerHTML = finalHtml;
-  document.body.appendChild(tmpDiv);
+  <!-- DETALLE -->
+  <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 18px">Detalle del Presupuesto</div>
+  <table>
+    <thead><tr style="background:#0D47A1;color:white">
+      <th style="width:22px;padding:7px 4px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.12)">#</th>
+      <th style="padding:7px 7px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:28%">Concepto</th>
+      <th style="padding:7px 7px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:22%">Descripción</th>
+      <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:9%">Cant.</th>
+      <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:18%">Precio Unit.</th>
+      <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;width:18%">Total</th>
+    </tr></thead>
+    <tbody>${rowsHtml}</tbody>
+  </table>
 
-  const filename = `Presupuesto_IPN_${nro}_${nombre.replace(/\s+/g,'_')}.pdf`;
+  <!-- TOTAL -->
+  <div style="background:#0D47A1;color:white;padding:12px 18px;text-align:center">
+    <div style="font-family:'Montserrat',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:0.8;margin-bottom:3px">💰 Total General a Pagar</div>
+    <div style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:#FFD54F;letter-spacing:1px">${gt} Gs</div>
+  </div>
+
+  ${obsSection}
+
+  <div style="text-align:center;font-size:8px;color:#78909C;font-style:italic;padding:5px 18px;background:#E3F2FD;border-top:1px solid #BBDEFB">
+    Este presupuesto es APROXIMADO y puede variar según la evolución del paciente. Válido por 30 días.
+  </div>
+  </div></body></html>`;
+
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:absolute;left:-9999px;top:0;width:794px;background:white;';
+  wrap.innerHTML=pdfDoc;
+  document.body.appendChild(wrap);
+
   await html2pdf().set({
-    margin:     [5, 5, 5, 5],
-    filename,
-    image:      { type:'jpeg', quality:0.98 },
-    html2canvas:{ scale:2, useCORS:true, logging:false, scrollX:0, scrollY:0, backgroundColor:'#ffffff' },
-    jsPDF:      { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(tmpDiv.firstElementChild).save();
+    margin:[5,5,5,5],
+    filename:`Presupuesto_IPN_${nro}_${nombre.replace(/\s+/g,'_')}.pdf`,
+    image:{type:'jpeg',quality:0.98},
+    html2canvas:{scale:2,useCORS:true,logging:false,scrollX:0,scrollY:0,backgroundColor:'#ffffff'},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(wrap.firstElementChild).save();
 
-  document.body.removeChild(tmpDiv);
+  document.body.removeChild(wrap);
 }
 
-// ═══════════════════════════════════════════════════════
-// WHATSAPP
-// ═══════════════════════════════════════════════════════
-function buildMessage() {
-  const nro = String(currentNro||peekNextNro()).padStart(4,'0');
-  const gt  = document.getElementById('gt-total').textContent;
-  const gp  = document.getElementById('gt-paciente').textContent;
-  const gs  = document.getElementById('gt-seguro').textContent;
-  const lines = [
+// ─── WHATSAPP ────────────────────────────────────────────
+function buildMessage(){
+  const nro=String(currentNro||peekNextNro()).padStart(4,'0');
+  const gt=document.getElementById('gt-total').textContent;
+  const lines=[
     '🏥 *PRESUPUESTO QUIRÚRGICO – IPN*',
     'Instituto Privado del Niño y Adolescente','',
     `📋 N°: *${nro}*   |   📅 ${v('fecha')}`,
     `👤 *${v('nombre')||'—'}*`,
     `🔖 Seguro: ${v('seguro')||'—'} – Plan: ${v('plan')||'—'}`,
     `🏷 Cirugía: ${v('cirugia')||'—'}`,
-    '',
-    '─────────────────────'
+    '','─────────────────────'
   ];
-  document.querySelectorAll('#tbody tr').forEach(tr => {
-    const total = unformat(tr.querySelector('.qty-input').value) * unformat(tr.querySelector('.price-input').value);
-    if (total > 0) {
-      const desc   = tr.querySelector('.concepto-input').value;
-      const detail = tr.querySelector('.detalle-input').value;
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const qty  =unformat(tr.querySelector('.qty-input').value);
+    const price=unformat(tr.querySelector('.price-input').value);
+    const total=qty*price;
+    if(total>0){
+      const desc  =tr.querySelector('.concepto-input').value;
+      const detail=tr.querySelector('.detalle-input').value;
       lines.push(`• ${desc}${detail?' — '+detail:''}: ${fmtMoney(total)} Gs`);
     }
   });
   lines.push('─────────────────────');
-  lines.push(`💰 Total: ${gt} Gs`);
-  lines.push(`👤 Cargo Paciente: *${gp} Gs*`);
-  lines.push(`🏥 Cargo Seguro: *${gs} Gs*`);
-  const obs = v('obs');
-  if (obs) { lines.push(''); lines.push(`📝 ${obs}`); }
-  lines.push(''); lines.push('_Presupuesto aproximado. Válido 30 días._');
+  lines.push(`💰 *Total General: ${gt} Gs*`);
+  const obs=v('obs');
+  if(obs){lines.push('');lines.push(`📝 ${obs}`);}
+  lines.push('');lines.push('_Presupuesto aproximado. Válido 30 días._');
   return lines.join('\n');
 }
-function showWAModal()  { document.getElementById('waModal').classList.add('show'); setTimeout(()=>document.getElementById('waNumber').focus(),100); }
-function closeWAModal() { document.getElementById('waModal').classList.remove('show'); }
-function sendWhatsApp() {
-  const num = document.getElementById('waNumber').value.replace(/\D/g,'');
-  if (!num) { alert('Ingresá un número.'); return; }
+function showWAModal() { document.getElementById('waModal').classList.add('show'); setTimeout(()=>document.getElementById('waNumber').focus(),100); }
+function closeWAModal(){ document.getElementById('waModal').classList.remove('show'); }
+function sendWhatsApp(){
+  const num=document.getElementById('waNumber').value.replace(/\D/g,'');
+  if(!num){alert('Ingresá un número.');return;}
   window.open(`https://wa.me/595${num}?text=${encodeURIComponent(buildMessage())}`,'_blank');
   closeWAModal();
 }
 
-// ═══════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════
-function showToast(msg, type='') {
+// ─── TOAST ───────────────────────────────────────────────
+function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast '+type; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ═══════════════════════════════════════════════════════
-// MODAL EVENTS
-// ═══════════════════════════════════════════════════════
 document.getElementById('waModal').addEventListener('click',function(e){if(e.target===this)closeWAModal();});
 document.getElementById('waNumber').addEventListener('keydown',function(e){if(e.key==='Enter')sendWhatsApp();});
 
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
+// ─── INIT ─────────────────────────────────────────────────
 updateNavCounter();
 renderList();
 </script>
