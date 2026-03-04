@@ -186,10 +186,12 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
   tbody td{padding:2px 4px!important;}
   table{font-size:10px!important;}
   .obs-wrap textarea{min-height:35px!important;font-size:10px!important;padding:5px!important;}
-  .totals-bar{padding:7px 16px!important;}
+  .totals-bar{padding:7px 16px!important;display:flex!important;}
   .total-item span{font-size:12px!important;}
   .total-item.highlight span{font-size:14px!important;}
   .footer-note{padding:4px 16px!important;font-size:8px!important;}
+  /* Hide the tfoot (table totals row) in PDF - totals-bar replaces it */
+  tfoot{display:none!important;}
 }
 </style>
 </head>
@@ -542,9 +544,26 @@ function buildTable(rows) {
 
 // ─── Numeric helpers ─────────────────────────────────────
 function unformat(s) {
-  // remove thousand separators, parse float
-  const clean = String(s||'0').replace(/[^0-9,.]/g,'').replace(/\./g,'').replace(/,/g,'.');
-  return parseFloat(clean) || 0;
+  // Paraguay format: 1.500.000 (dot=thousands) or 1,5 (comma=decimal)
+  // qty uses dot as decimal: 1.5
+  const str = String(s || '0').trim().replace(/[^0-9.,]/g,'');
+  if (!str) return 0;
+  // Has comma -> dot=thousands, comma=decimal
+  if (str.includes(',')) {
+    return parseFloat(str.replace(/\./g,'').replace(',','.')) || 0;
+  }
+  const dotCount = (str.match(/\./g)||[]).length;
+  if (dotCount === 1) {
+    const afterDot = str.split('.')[1];
+    // 1-2 digits after dot = decimal (1.5, 1.50); 3 digits = thousands (300.000)
+    return afterDot && afterDot.length <= 2
+      ? parseFloat(str) || 0
+      : parseFloat(str.replace('.','')) || 0;
+  } else if (dotCount > 1) {
+    // multiple dots = all thousands separators
+    return parseFloat(str.replace(/\./g,'')) || 0;
+  }
+  return parseFloat(str) || 0;
 }
 function cleanNumericInput(inp) {
   // Allow only digits, dots, commas
@@ -852,17 +871,34 @@ function updateNavCounter() {
 // ═══════════════════════════════════════════════════════
 async function exportPDF() {
   const el  = document.getElementById('printArea');
-  const act = el.querySelector('.actions');
-  act.style.display = 'none';
   const filename = `Presupuesto_IPN_${String(currentNro||peekNextNro()).padStart(4,'0')}_${v('nombre')||'paciente'}.pdf`;
+
+  // Clone the card only — avoids capturing hidden views and nav
+  const clone = el.cloneNode(true);
+  clone.style.cssText = 'background:white;margin:0;padding:0;border-radius:0;box-shadow:none;';
+  // Hide action buttons in clone
+  const actClone = clone.querySelector('.actions');
+  if (actClone) actClone.remove();
+  // Hide mod badge in clone
+  const badgeClone = clone.querySelector('.mod-badge');
+  if (badgeClone) badgeClone.remove();
+
+  // Temporarily attach clone to body (needed for html2canvas)
+  clone.style.position = 'absolute';
+  clone.style.left     = '-9999px';
+  clone.style.top      = '0';
+  clone.style.width    = '794px'; // A4 width in px at 96dpi
+  document.body.appendChild(clone);
+
   await html2pdf().set({
     margin:     [4, 4, 4, 4],
     filename,
     image:      { type:'jpeg', quality:0.97 },
-    html2canvas:{ scale:2, useCORS:true, logging:false },
+    html2canvas:{ scale:2, useCORS:true, logging:false, scrollX:0, scrollY:0 },
     jsPDF:      { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(el).save();
-  act.style.display = '';
+  }).from(clone).save();
+
+  document.body.removeChild(clone);
 }
 
 // ═══════════════════════════════════════════════════════
