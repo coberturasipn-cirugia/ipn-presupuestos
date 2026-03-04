@@ -485,8 +485,19 @@ function buildTable(rows) {
 
   // ── Events ───────────────────────────────────────────
   tbody.querySelectorAll('.qty-input,.price-input').forEach(inp => {
-    inp.addEventListener('input', () => { cleanNumericInput(inp); recalcRow(getRowIdx(inp)); markDirty(); });
-    inp.addEventListener('blur', () => formatOnBlur(inp, inp.classList.contains('qty-input')));
+    inp.addEventListener('input', () => {
+      cleanNumericInput(inp);
+      const i = getRowIdx(inp);
+      recalcRow(i);
+      updateGT();
+      markDirty();
+    });
+    inp.addEventListener('blur', () => {
+      formatOnBlur(inp, inp.classList.contains('qty-input'));
+      const i = getRowIdx(inp);
+      recalcRow(i);
+      updateGT();
+    });
   });
 
   tbody.querySelectorAll('.cp-input').forEach((inp, i) => {
@@ -495,15 +506,17 @@ function buildTable(rows) {
       inp.dataset.touched = '1';
       const raw = unformat(inp.value);
       if (raw === 0) {
-        // CP = 0 → push total to CS
         const total = getRowTotal(i);
         const csInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cs-input');
         csInp.value = fmtMoney(total);
         csInp.dataset.touched = '1';
       }
-      recalcRow(i); updateGT(); markDirty();
+      updateGT(); markDirty();
     });
-    inp.addEventListener('blur', () => formatOnBlur(inp, false));
+    inp.addEventListener('blur', () => {
+      formatOnBlur(inp, false);
+      updateGT();
+    });
   });
 
   tbody.querySelectorAll('.cs-input').forEach((inp, i) => {
@@ -512,15 +525,17 @@ function buildTable(rows) {
       inp.dataset.touched = '1';
       const raw = unformat(inp.value);
       if (raw === 0) {
-        // CS = 0 → push total to CP
         const total = getRowTotal(i);
         const cpInp = document.querySelectorAll('#tbody tr')[i].querySelector('.cp-input');
         cpInp.value = fmtMoney(total);
         cpInp.dataset.touched = '1';
       }
-      recalcRow(i); updateGT(); markDirty();
+      updateGT(); markDirty();
     });
-    inp.addEventListener('blur', () => formatOnBlur(inp, false));
+    inp.addEventListener('blur', () => {
+      formatOnBlur(inp, false);
+      updateGT();
+    });
   });
 
   tbody.querySelectorAll('.concepto-input,.detalle-input').forEach(inp => {
@@ -870,35 +885,177 @@ function updateNavCounter() {
 // PDF EXPORT
 // ═══════════════════════════════════════════════════════
 async function exportPDF() {
-  const el  = document.getElementById('printArea');
-  const filename = `Presupuesto_IPN_${String(currentNro||peekNextNro()).padStart(4,'0')}_${v('nombre')||'paciente'}.pdf`;
+  const nro      = String(currentNro||peekNextNro()).padStart(4,'0');
+  const nombre   = v('nombre') || '—';
+  const seguro   = v('seguro') || '—';
+  const plan     = v('plan')   || '—';
+  const cirugia  = v('cirugia')|| '—';
+  const cirujano = v('cirujano')|| '—';
+  const fecha    = v('fecha')  || '—';
+  const obs      = v('obs');
+  const gt  = document.getElementById('gt-total').textContent;
+  const gp  = document.getElementById('gt-paciente').textContent;
+  const gs  = document.getElementById('gt-seguro').textContent;
+  const modInfo = document.getElementById('modDateDisplay').textContent;
+  const isModified = document.getElementById('modBadge').style.display !== 'none';
 
-  // Clone the card only — avoids capturing hidden views and nav
-  const clone = el.cloneNode(true);
-  clone.style.cssText = 'background:white;margin:0;padding:0;border-radius:0;box-shadow:none;';
-  // Hide action buttons in clone
-  const actClone = clone.querySelector('.actions');
-  if (actClone) actClone.remove();
-  // Hide mod badge in clone
-  const badgeClone = clone.querySelector('.mod-badge');
-  if (badgeClone) badgeClone.remove();
+  // Build rows HTML
+  let rowsHtml = '';
+  let hasRows = false;
+  document.querySelectorAll('#tbody tr').forEach((tr, i) => {
+    const qty   = unformat(tr.querySelector('.qty-input').value);
+    const price = unformat(tr.querySelector('.price-input').value);
+    const total = qty * price;
+    const concepto = tr.querySelector('.concepto-input').value;
+    const detalle  = tr.querySelector('.detalle-input').value;
+    const cp = unformat(tr.querySelector('.cp-input').value);
+    const cs = unformat(tr.querySelector('.cs-input').value);
+    const bg = i % 2 === 0 ? '#EBF5FB' : '#FFFFFF';
+    rowsHtml += `<tr style="background:${bg}">
+      <td style="text-align:center;color:#90A4AE;font-size:9px;font-weight:700;padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0">${i+1}</td>
+      <td style="padding:3px 6px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:9px;font-weight:600;text-transform:uppercase">${concepto}</td>
+      <td style="padding:3px 6px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;font-size:8.5px;color:#546E7A;font-style:italic;text-transform:uppercase">${detalle}</td>
+      <td style="padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtQty(qty)}</td>
+      <td style="padding:3px 5px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:600;color:#1565C0">${fmtMoney(price)}</td>
+      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;background:#E8F8F5">${fmtMoney(total)}</td>
+      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;color:#E65100;background:#FFF8E1">${fmtMoney(cp)}</td>
+      <td style="padding:3px 7px;border-bottom:1px solid #E0E0E0;text-align:right;font-size:9px;font-weight:700;color:#2E7D32;background:#E8F5E9">${fmtMoney(cs)}</td>
+    </tr>`;
+    if (total > 0) hasRows = true;
+  });
 
-  // Temporarily attach clone to body (needed for html2canvas)
-  clone.style.position = 'absolute';
-  clone.style.left     = '-9999px';
-  clone.style.top      = '0';
-  clone.style.width    = '794px'; // A4 width in px at 96dpi
-  document.body.appendChild(clone);
+  const obsHtml = obs ? `
+    <div style="margin-top:0">
+      <div style="background:#1976D2;color:white;padding:5px 14px;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase">
+        OBSERVACIONES / REFERENCIA DEL SEGURO
+      </div>
+      <div style="border:1px solid #B0BEC5;border-top:none;padding:8px 14px;font-size:9px;color:#212121;background:#FAFAFA;text-transform:uppercase;min-height:28px">${obs}</div>
+    </div>` : '';
 
+  const modHtml = isModified ? `<div style="font-size:8px;color:#E65100;font-weight:700;margin-top:2px">✏ MODIFICADO: ${modInfo}</div>` : '';
+
+  const LOGO = 'LOGO_PLACEHOLDER';
+
+  const pdfHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:white;color:#212121;}
+    table{border-collapse:collapse;width:100%;}
+  </style></head><body>
+  <div style="background:white;padding:0;font-family:'Inter',sans-serif;">
+
+    <!-- HEADER -->
+    <div style="display:flex;align-items:center;gap:14px;padding:10px 16px 0;border-bottom:3px solid #1565C0;background:white">
+      <img src="data:image/png;base64,${LOGO}" style="width:60px;height:60px;object-fit:contain">
+      <div style="flex:1;text-align:center;padding-bottom:10px">
+        <div style="font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:#0D47A1;text-transform:uppercase;letter-spacing:0.5px">Instituto Privado del Niño y Adolescente</div>
+        <div style="font-size:8px;color:#78909C;font-weight:500;letter-spacing:3px;text-transform:uppercase;margin-top:3px">Presupuesto Quirúrgico Aproximado</div>
+      </div>
+      <div style="min-width:155px;padding-bottom:10px">
+        <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px">N° Presupuesto ⚙ auto</div>
+        <div style="border:1.5px solid #1976D2;border-radius:4px;padding:3px 8px;font-size:15px;font-family:'Montserrat',sans-serif;font-weight:800;color:#0D47A1;background:#E3F2FD;letter-spacing:2px;margin-top:2px">${nro}</div>
+        <div style="font-size:7px;font-weight:700;color:#1565C0;text-transform:uppercase;letter-spacing:1px;margin-top:5px">Fecha</div>
+        <div style="border:1px solid #B0BEC5;border-radius:4px;padding:3px 8px;font-size:11px;background:#E3F2FD;margin-top:2px">${fecha}</div>
+        ${modHtml}
+      </div>
+    </div>
+
+    <!-- DATOS PACIENTE -->
+    <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px">Datos del Paciente</div>
+    <table style="border-bottom:2px solid #1565C0">
+      <tr>
+        <td colspan="4" style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px">
+          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Apellido y Nombre</span>
+          <span style="font-size:10px;font-weight:600">${nombre}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px;width:50%">
+          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Seguro Médico</span>
+          <span style="font-size:10px">${seguro}</span>
+        </td>
+        <td style="background:#F5F5F5;border-bottom:1px solid #E0E0E0;padding:5px 10px;width:50%">
+          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Plan</span>
+          <span style="font-size:10px">${plan}</span>
+        </td>
+      </tr>
+      <tr>
+        <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;border-right:1px solid #E0E0E0;padding:5px 10px">
+          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Cirugía</span>
+          <span style="font-size:10px">${cirugia}</span>
+        </td>
+        <td style="background:#EBF5FB;border-bottom:1px solid #E0E0E0;padding:5px 10px">
+          <span style="font-size:8px;font-weight:700;color:#0D47A1;text-transform:uppercase;letter-spacing:0.4px;margin-right:8px">Cirujano</span>
+          <span style="font-size:10px">${cirujano}</span>
+        </td>
+      </tr>
+    </table>
+
+    <div style="height:4px;background:#0D47A1"></div>
+
+    <!-- DETALLE -->
+    <div style="background:#1976D2;color:white;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 16px">Detalle del Presupuesto</div>
+    <table>
+      <thead>
+        <tr style="background:#0D47A1;color:white">
+          <th style="width:22px;padding:7px 4px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.12)">#</th>
+          <th style="padding:7px 6px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:22%">Concepto</th>
+          <th style="padding:7px 6px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,0.12);width:16%">Descripción</th>
+          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:center;border-right:1px solid rgba(255,255,255,0.12);width:7%">Cant.</th>
+          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:13%">Precio Unit.</th>
+          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:12%">Total</th>
+          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;border-right:1px solid rgba(255,255,255,0.12);width:13%">C. Paciente</th>
+          <th style="padding:7px 5px;font-family:'Montserrat',sans-serif;font-size:8px;font-weight:700;text-transform:uppercase;text-align:right;width:12%">C. Seguro</th>
+        </tr>
+      </thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+
+    <!-- TOTALS BAR -->
+    <div style="display:flex;background:#0D47A1;color:white;padding:8px 16px;gap:0;align-items:center">
+      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.2);padding-right:16px">
+        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">💰 Total General</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:800;margin-top:2px">${gt} Gs</div>
+      </div>
+      <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.2);padding:0 16px">
+        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">👤 Cargo Paciente</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#FFD54F;margin-top:2px">${gp} Gs</div>
+      </div>
+      <div style="flex:1;text-align:center;padding-left:16px">
+        <div style="font-family:'Montserrat',sans-serif;font-size:7px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">🏥 Cargo Seguro</div>
+        <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#A5D6A7;margin-top:2px">${gs} Gs</div>
+      </div>
+    </div>
+
+    ${obsHtml}
+
+    <!-- FOOTER -->
+    <div style="text-align:center;font-size:8px;color:#78909C;font-style:italic;padding:5px 16px;background:#E3F2FD;border-top:1px solid #BBDEFB">
+      Este presupuesto es APROXIMADO y puede variar según la evolución del paciente. Válido por 30 días.
+    </div>
+
+  </div>
+  </body></html>`;
+
+  const logoB64 = document.querySelector('.doc-logo img').src.split('base64,')[1];
+  const finalHtml = pdfHtml.replace('LOGO_PLACEHOLDER', logoB64);
+
+  const tmpDiv = document.createElement('div');
+  tmpDiv.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:white;';
+  tmpDiv.innerHTML = finalHtml;
+  document.body.appendChild(tmpDiv);
+
+  const filename = `Presupuesto_IPN_${nro}_${nombre.replace(/\s+/g,'_')}.pdf`;
   await html2pdf().set({
-    margin:     [4, 4, 4, 4],
+    margin:     [5, 5, 5, 5],
     filename,
-    image:      { type:'jpeg', quality:0.97 },
-    html2canvas:{ scale:2, useCORS:true, logging:false, scrollX:0, scrollY:0 },
+    image:      { type:'jpeg', quality:0.98 },
+    html2canvas:{ scale:2, useCORS:true, logging:false, scrollX:0, scrollY:0, backgroundColor:'#ffffff' },
     jsPDF:      { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(clone).save();
+  }).from(tmpDiv.firstElementChild).save();
 
-  document.body.removeChild(clone);
+  document.body.removeChild(tmpDiv);
 }
 
 // ═══════════════════════════════════════════════════════
