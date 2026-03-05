@@ -767,10 +767,18 @@ async function exportPDF(){
 </html>`;
 
   // ── Render offscreen and export ───────────────────────
+  // pdfDoc is a full HTML doc string. Extract only <body> content
+  // because div.innerHTML ignores <html>/<head>/<body> wrapper tags
+  const bodyMatch = pdfDoc.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const bodyContent = bodyMatch ? bodyMatch[1] : pdfDoc;
+
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:white;';
-  wrap.innerHTML = pdfDoc;
+  wrap.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:white;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#212529;';
+  wrap.innerHTML = bodyContent;
   document.body.appendChild(wrap);
+
+  // Small delay so browser fully renders the injected HTML
+  await new Promise(r => setTimeout(r, 350));
 
   // Filename: "NombrePaciente - Presupuesto de Cirugia.pdf"
   const safeName = nombre.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s]/g, '').trim();
@@ -782,7 +790,7 @@ async function exportPDF(){
     image:       { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
     jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(wrap.firstElementChild).save();
+  }).from(wrap).save();
 
   document.body.removeChild(wrap);
 }
