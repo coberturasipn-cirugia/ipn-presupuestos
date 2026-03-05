@@ -6,6 +6,7 @@
 <title>Presupuestos – IPN</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--blue:#1565C0;--blue-med:#1976D2;--blue-light:#E3F2FD;--blue-dark:#0D47A1;--gray:#F5F5F5;--border:#B0BEC5;--text:#212121;--orange:#FF6F00;--green:#2E7D32;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -571,228 +572,276 @@ function updateNavCounter(){ const n=loadDB().length; document.getElementById('n
 
 // ─── PDF ─────────────────────────────────────────────────
 async function exportPDF(){
-  // ── Collect data from existing form fields ────────────
+  // ── Validate ──────────────────────────────────────────
   const nombreRaw = v('nombre');
   if (!nombreRaw.trim()) {
     showToast('⚠ Ingresá el nombre del paciente antes de exportar.', '');
     return;
   }
 
-  const nombre   = nombreRaw || '—';
-  const seguro   = v('seguro')  || '—';
-  const plan     = v('plan')    || '—';
-  const cirugia  = v('cirugia') || '—';
-  const cirujano = v('cirujano')|| '—';
-  const celular  = v('celular') || '—';
-  const email    = v('email')   || '—';
-  const padre    = v('padre')   || '—';
-  const fecha    = v('fecha')   || '—';
-  const obs      = v('obs');
-  const gt       = document.getElementById('gt-total').textContent;
+  // ── Collect data ──────────────────────────────────────
+  const nombre   = nombreRaw.toUpperCase();
+  const seguro   = (v('seguro')  || '—').toUpperCase();
+  const plan     = (v('plan')    || '—').toUpperCase();
+  const cirugia  = (v('cirugia') || '—').toUpperCase();
+  const cirujano = (v('cirujano')|| '—').toUpperCase();
+  const celular  = v('celular')  || '—';
+  const email    = v('email')    || '—';
+  const padre    = (v('padre')   || '—').toUpperCase();
+  const fecha    = v('fecha')    || '—';
+  const obs      = v('obs')      || '';
+  const gtText   = document.getElementById('gt-total').textContent || '0';
 
-  // ── Auto-generate presupuesto number: IPN-YYYYMMDD-HHMMSS ─
-  const now    = new Date();
-  const yyyy   = now.getFullYear();
-  const mm     = String(now.getMonth()+1).padStart(2,'0');
-  const dd     = String(now.getDate()).padStart(2,'0');
-  const hh     = String(now.getHours()).padStart(2,'0');
-  const mi     = String(now.getMinutes()).padStart(2,'0');
-  const ss     = String(now.getSeconds()).padStart(2,'0');
-  const autoNro    = `IPN-${yyyy}${mm}${dd}-${hh}${mi}${ss}`;
-  const fechaGen   = `${dd}/${mm}/${yyyy}`;
-  const horaGen    = `${hh}:${mi}:${ss}`;
+  // ── Auto number ───────────────────────────────────────
+  const now   = new Date();
+  const pad   = n => String(n).padStart(2,'0');
+  const yyyy  = now.getFullYear();
+  const mo    = pad(now.getMonth()+1);
+  const dd    = pad(now.getDate());
+  const hh    = pad(now.getHours());
+  const mi    = pad(now.getMinutes());
+  const ss    = pad(now.getSeconds());
+  const autoNro  = `IPN-${yyyy}${mo}${dd}-${hh}${mi}${ss}`;
+  const fechaGen = `${dd}/${mo}/${yyyy}`;
+  const horaGen  = `${hh}:${mi}:${ss}`;
 
-  // ── Build table rows (only rows with total > 0) ───────
-  let rowsHtml = '';
-  let hasItems = false;
-  document.querySelectorAll('#tbody tr').forEach((tr, i) => {
-    const qty     = unformat(tr.querySelector('.qty-input').value);
-    const price   = unformat(tr.querySelector('.price-input').value);
-    const total   = qty * price;
+  // ── Collect rows (total > 0 only) ─────────────────────
+  const items = [];
+  document.querySelectorAll('#tbody tr').forEach(tr => {
+    const qty   = unformat(tr.querySelector('.qty-input').value);
+    const price = unformat(tr.querySelector('.price-input').value);
+    const total = qty * price;
     if (total <= 0) return;
-    hasItems = true;
-    const concepto = tr.querySelector('.concepto-input').value || '—';
-    const detalle  = tr.querySelector('.detalle-input').value  || '';
-    const bg = i % 2 === 0 ? '#F0F7FF' : '#FFFFFF';
-    rowsHtml += `
-      <tr style="background:${bg}">
-        <td style="padding:6px 8px;border:1px solid #DEE2E6;font-size:9px;font-weight:600;text-transform:uppercase;color:#212529">${concepto}${detalle ? '<br><span style="font-weight:400;color:#6C757D;font-style:italic;font-size:8px">'+detalle+'</span>' : ''}</td>
-        <td style="padding:6px 8px;border:1px solid #DEE2E6;text-align:center;font-size:9px;color:#0d6efd;font-weight:600">${fmtQty(qty)}</td>
-        <td style="padding:6px 8px;border:1px solid #DEE2E6;text-align:right;font-size:9px;color:#0d6efd;font-weight:600">Gs ${fmtMoney(price)}</td>
-        <td style="padding:6px 8px;border:1px solid #DEE2E6;text-align:right;font-size:9.5px;font-weight:800;color:#0d6efd;background:#EBF3FF">Gs ${fmtMoney(total)}</td>
-      </tr>`;
+    items.push({
+      concepto: (tr.querySelector('.concepto-input').value || '').toUpperCase(),
+      detalle:  (tr.querySelector('.detalle-input').value  || '').toUpperCase(),
+      qty, price, total
+    });
   });
-  if (!rowsHtml) rowsHtml = `<tr><td colspan="4" style="padding:12px;text-align:center;color:#6C757D;font-size:9px;border:1px solid #DEE2E6">Sin ítems con monto mayor a cero</td></tr>`;
 
-  // ── Logo from embedded nav image ──────────────────────
-  const logoB64 = document.querySelector('.doc-logo img').src.split('base64,')[1] || '';
-  const logoTag = logoB64
-    ? `<img src="data:image/png;base64,${logoB64}" style="width:95px;height:95px;object-fit:contain;display:block">`
-    : `<div style="width:95px;height:95px;background:#E3F2FD;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#0d6efd;font-weight:700">IPN</div>`;
+  // ── jsPDF setup ───────────────────────────────────────
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const PW  = 210;   // page width mm
+  const PH  = 297;   // page height mm
+  const ML  = 12;    // margin left
+  const MR  = 12;    // margin right
+  const CW  = PW - ML - MR;  // content width
+  const BLUE   = [13,  110, 253];   // #0d6efd
+  const DKBLUE = [10,  57,  107];   // #0A396B
+  const WHITE  = [255, 255, 255];
+  const LGRAY  = [240, 247, 255];   // light blue-gray
+  const GRAY   = [108, 117, 125];
+  const BLACK  = [33,  37,  41];
+  const GOLD   = [255, 215,  0];
+  const BGGRAY = [248, 249, 250];
 
-  // ── Observations section ──────────────────────────────
-  const obsSection = obs.trim() ? `
-    <div style="margin-top:14px;border:1.5px solid #0d6efd;border-radius:6px;overflow:hidden">
-      <div style="background:#0d6efd;color:white;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase">
-        OBSERVACIONES
-      </div>
-      <div style="padding:10px 12px;font-size:9.5px;color:#212529;background:#F8F9FA;line-height:1.5;white-space:pre-wrap">${obs}</div>
-    </div>` : '';
+  let y = 0;   // current Y cursor
 
-  // ── Full HTML document for PDF ────────────────────────
-  const pdfDoc = `<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, Helvetica, sans-serif; background: white; color: #212529; font-size: 10px; }
-    table { border-collapse: collapse; width: 100%; }
-  </style>
-</head>
-<body>
-<div style="padding:0;background:white;max-width:794px">
+  // ── Helper: filled rect ───────────────────────────────
+  function fillRect(x, yy, w, h, color) {
+    doc.setFillColor(...color);
+    doc.rect(x, yy, w, h, 'F');
+  }
+  // ── Helper: text with color ───────────────────────────
+  function text(str, x, yy, opts = {}) {
+    const { size=9, bold=false, color=BLACK, align='left', maxW } = opts;
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...color);
+    const tOpts = { align };
+    if (maxW) tOpts.maxWidth = maxW;
+    doc.text(String(str), x, yy, tOpts);
+  }
+  // ── Helper: wrap text and return new Y ────────────────
+  function textBox(str, x, yy, maxW, lineH, opts = {}) {
+    const { size=9, bold=false, color=BLACK } = opts;
+    doc.setFontSize(size);
+    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setTextColor(...color);
+    const lines = doc.splitTextToSize(String(str), maxW);
+    doc.text(lines, x, yy);
+    return yy + (lines.length - 1) * lineH;
+  }
+  // ── Helper: horizontal line ───────────────────────────
+  function hline(yy, color = [220,220,220]) {
+    doc.setDrawColor(...color);
+    doc.setLineWidth(0.2);
+    doc.line(ML, yy, ML + CW, yy);
+  }
 
-  <!-- ══ HEADER ══ -->
-  <div style="display:flex;align-items:center;gap:18px;padding:16px 20px 14px;border-bottom:3px solid #0d6efd;background:white">
+  // ════════════════════════════════════════════════════
+  // HEADER BAND
+  // ════════════════════════════════════════════════════
+  const HDR_H = 32;
+  fillRect(0, 0, PW, HDR_H, BLUE);
 
-    <!-- Logo izquierda -->
-    <div style="flex-shrink:0">${logoTag}</div>
+  // Logo placeholder (white circle with "IPN")
+  const logoB64 = document.querySelector('.doc-logo img')?.src || '';
+  if (logoB64.includes('base64,')) {
+    try {
+      doc.addImage(logoB64, 'JPEG', ML, 3, 22, 22, '', 'FAST');
+    } catch(e) {
+      // fallback: white circle
+      doc.setFillColor(...WHITE);
+      doc.circle(ML + 11, 3 + 11, 11, 'F');
+      text('IPN', ML + 11, 3 + 13, { size: 10, bold: true, color: BLUE, align: 'center' });
+    }
+  } else {
+    doc.setFillColor(...WHITE);
+    doc.circle(ML + 11, 3 + 11, 11, 'F');
+    text('IPN', ML + 11, 3 + 13, { size: 10, bold: true, color: BLUE, align: 'center' });
+  }
 
-    <!-- Título centrado -->
-    <div style="flex:1;text-align:center;padding:0 10px">
-      <div style="font-size:7px;color:#6C757D;letter-spacing:3px;text-transform:uppercase;margin-bottom:5px">República del Paraguay</div>
-      <div style="font-size:17px;font-weight:900;color:#0d6efd;text-transform:uppercase;letter-spacing:0.5px;line-height:1.2">INSTITUTO PRIVADO DEL NIÑO S.A.</div>
-      <div style="font-size:11px;font-weight:700;color:#343A40;text-transform:uppercase;letter-spacing:2px;margin-top:4px">PRESUPUESTO QUIRÚRGICO</div>
-      <div style="margin-top:8px;display:inline-block;background:#E8F4FF;border:1px solid #0d6efd;border-radius:4px;padding:3px 14px">
-        <span style="font-size:8px;color:#0d6efd;font-weight:700;letter-spacing:0.5px">Documento generado electrónicamente</span>
-      </div>
-    </div>
+  // Institution name centered
+  text('INSTITUTO PRIVADO DEL NIÑO S.A.', PW/2, 11, { size:13, bold:true, color:WHITE, align:'center' });
+  text('PRESUPUESTO QUIRÚRGICO', PW/2, 17, { size:9, color:WHITE, align:'center' });
+  text('República del Paraguay', PW/2, 22, { size:7, color:[200,225,255], align:'center' });
 
-    <!-- Número y fecha superior derecha -->
-    <div style="flex-shrink:0;min-width:160px;background:#F0F7FF;border:1.5px solid #0d6efd;border-radius:8px;padding:10px 14px">
-      <div style="font-size:7px;font-weight:700;color:#6C757D;text-transform:uppercase;letter-spacing:1px">N° Presupuesto</div>
-      <div style="font-size:10.5px;font-weight:900;color:#0d6efd;letter-spacing:0.5px;margin:3px 0 8px;word-break:break-all">${autoNro}</div>
-      <div style="display:flex;gap:12px">
-        <div>
-          <div style="font-size:7px;font-weight:700;color:#6C757D;text-transform:uppercase;letter-spacing:1px">Fecha</div>
-          <div style="font-size:10px;font-weight:700;color:#212529;margin-top:2px">${fechaGen}</div>
-        </div>
-        <div>
-          <div style="font-size:7px;font-weight:700;color:#6C757D;text-transform:uppercase;letter-spacing:1px">Hora</div>
-          <div style="font-size:10px;font-weight:700;color:#212529;margin-top:2px">${horaGen}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  // Number box top-right
+  const NW = 58;
+  const NX = PW - MR - NW;
+  fillRect(NX, 2, NW, 28, DKBLUE);
+  text('N° PRESUPUESTO', NX + NW/2, 7, { size:6, color:[180,210,255], align:'center' });
+  text(autoNro, NX + NW/2, 13, { size:7, bold:true, color:GOLD, align:'center' });
+  doc.setDrawColor(...GOLD);
+  doc.setLineWidth(0.3);
+  doc.line(NX+3, 15, NX+NW-3, 15);
+  text(`Fecha: ${fechaGen}`, NX + NW/2, 19, { size:7, color:WHITE, align:'center' });
+  text(`Hora:  ${horaGen}`,  NX + NW/2, 24, { size:7, color:WHITE, align:'center' });
 
-  <div style="padding:14px 20px 0">
+  y = HDR_H + 5;
 
-    <!-- ══ DATOS DEL PACIENTE ══ -->
-    <div style="margin-bottom:14px">
-      <div style="background:#0d6efd;color:white;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px 5px 0 0">
-        DATOS DEL PACIENTE
-      </div>
-      <table style="border:1.5px solid #0d6efd;border-top:none;border-radius:0 0 5px 5px;overflow:hidden">
-        <tr>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;width:18%;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Paciente</td>
-          <td colspan="3" style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;font-size:11px;font-weight:700;color:#212529">${nombre}</td>
-        </tr>
-        <tr>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Seguro</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:9.5px;color:#212529;width:30%">${seguro}</td>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase;width:14%">Plan</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;font-size:9.5px;color:#212529">${plan}</td>
-        </tr>
-        <tr>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Cirugía</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:9.5px;color:#212529">${cirugia}</td>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Cirujano</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;font-size:9.5px;color:#212529">${cirujano}</td>
-        </tr>
-        <tr>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Celular</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:9.5px;color:#212529">${celular}</td>
-          <td style="background:#EBF3FF;padding:7px 12px;border-bottom:1px solid #DEE2E6;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Email</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-bottom:1px solid #DEE2E6;font-size:9.5px;color:#212529">${email}</td>
-        </tr>
-        <tr>
-          <td style="background:#EBF3FF;padding:7px 12px;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Fecha Pres.</td>
-          <td style="background:#F8F9FA;padding:7px 12px;border-right:1px solid #DEE2E6;font-size:9.5px;color:#212529">${fecha}</td>
-          <td style="background:#EBF3FF;padding:7px 12px;border-right:1px solid #DEE2E6;font-size:8px;font-weight:700;color:#0d6efd;text-transform:uppercase">Padre/Madre</td>
-          <td style="background:#F8F9FA;padding:7px 12px;font-size:9.5px;color:#212529">${padre}</td>
-        </tr>
-      </table>
-    </div>
+  // ════════════════════════════════════════════════════
+  // DATOS DEL PACIENTE
+  // ════════════════════════════════════════════════════
+  // Section header
+  fillRect(ML, y, CW, 6, BLUE);
+  text('DATOS DEL PACIENTE', ML+3, y+4.2, { size:8, bold:true, color:WHITE });
+  y += 6;
 
-    <!-- ══ TABLA DEL PRESUPUESTO ══ -->
-    <div style="margin-bottom:0">
-      <div style="background:#0d6efd;color:white;padding:6px 12px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;border-radius:5px 5px 0 0">
-        DETALLE DEL PRESUPUESTO
-      </div>
-      <table style="border:1.5px solid #0d6efd;border-top:none">
-        <thead>
-          <tr style="background:#1A3A6B;color:white">
-            <th style="padding:7px 8px;text-align:left;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-right:1px solid rgba(255,255,255,0.15);width:46%">Concepto / Descripción</th>
-            <th style="padding:7px 8px;text-align:center;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-right:1px solid rgba(255,255,255,0.15);width:12%">Cant.</th>
-            <th style="padding:7px 8px;text-align:right;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-right:1px solid rgba(255,255,255,0.15);width:21%">Precio Unit.</th>
-            <th style="padding:7px 8px;text-align:right;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;width:21%">Total</th>
-          </tr>
-        </thead>
-        <tbody>${rowsHtml}</tbody>
-      </table>
-    </div>
+  // Data rows
+  const ROW_H = 6.5;
+  const LW = 28;    // label column width
+  const HCW = (CW - LW) / 2;  // half content width
 
-    <!-- ══ TOTAL GENERAL ══ -->
-    <div style="background:linear-gradient(135deg,#0d6efd,#0A58CA);color:white;padding:14px 18px;border-radius:0 0 6px 6px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;opacity:0.9">TOTAL GENERAL</div>
-      <div style="font-size:22px;font-weight:900;letter-spacing:1px;color:#FFD700">Gs ${gt}</div>
-    </div>
+  function dataRow(label, val, yy, shade) {
+    if (shade) fillRect(ML, yy, CW, ROW_H, LGRAY);
+    else fillRect(ML, yy, CW, ROW_H, BGGRAY);
+    fillRect(ML, yy, LW, ROW_H, [225, 237, 255]);
+    doc.setDrawColor(220,220,220); doc.setLineWidth(0.15);
+    doc.rect(ML, yy, CW, ROW_H, 'S');
+    text(label, ML+2, yy+4.3, { size:7, bold:true, color:DKBLUE });
+    text(val,   ML+LW+2, yy+4.3, { size:8, color:BLACK });
+  }
+  function dataRowHalf(l1, v1, l2, v2, yy, shade) {
+    if (shade) fillRect(ML, yy, CW, ROW_H, LGRAY);
+    else fillRect(ML, yy, CW, ROW_H, BGGRAY);
+    // left half
+    fillRect(ML, yy, LW, ROW_H, [225, 237, 255]);
+    doc.setDrawColor(220,220,220); doc.setLineWidth(0.15);
+    doc.rect(ML, yy, CW/2, ROW_H, 'S');
+    text(l1, ML+2, yy+4.3, { size:7, bold:true, color:DKBLUE });
+    text(v1, ML+LW+2, yy+4.3, { size:8, color:BLACK, maxW: CW/2 - LW - 3 });
+    // right half
+    fillRect(ML + CW/2, yy, LW, ROW_H, [225, 237, 255]);
+    doc.rect(ML + CW/2, yy, CW/2, ROW_H, 'S');
+    text(l2, ML + CW/2 + 2, yy+4.3, { size:7, bold:true, color:DKBLUE });
+    text(v2, ML + CW/2 + LW + 2, yy+4.3, { size:8, color:BLACK, maxW: CW/2 - LW - 3 });
+  }
 
-    ${obsSection}
+  dataRow('PACIENTE', nombre, y, false); y += ROW_H;
+  dataRowHalf('SEGURO', seguro, 'PLAN', plan, y, true); y += ROW_H;
+  dataRowHalf('CIRUGÍA', cirugia, 'CIRUJANO', cirujano, y, false); y += ROW_H;
+  dataRowHalf('CELULAR', celular, 'EMAIL', email, y, true); y += ROW_H;
+  dataRowHalf('FECHA', fecha, 'PADRE/MADRE', padre, y, false); y += ROW_H;
 
-    <!-- ══ PIE INSTITUCIONAL ══ -->
-    <div style="margin-top:16px;border-top:2px solid #DEE2E6;padding-top:12px;text-align:center">
-      <div style="font-size:10px;font-weight:700;color:#343A40;margin-bottom:5px">Instituto Privado del Niño S.A.</div>
-      <div style="font-size:8px;color:#6C757D;line-height:1.6;max-width:540px;margin:0 auto">
-        Este presupuesto es aproximado y puede variar según la evolución clínica del paciente.<br>
-        Se solicita un depósito del 50% del monto total al momento del ingreso del paciente, como confirmación del procedimiento quirúrgico.<br>
-        Documento generado electrónicamente por el sistema de presupuestos del Instituto Privado del Niño.
-      </div>
-    </div>
+  y += 5;
 
-  </div>
-</div>
-</body>
-</html>`;
+  // ════════════════════════════════════════════════════
+  // DETALLE DEL PRESUPUESTO
+  // ════════════════════════════════════════════════════
+  fillRect(ML, y, CW, 6, BLUE);
+  text('DETALLE DEL PRESUPUESTO', ML+3, y+4.2, { size:8, bold:true, color:WHITE });
+  y += 6;
 
-  // ── Render offscreen and export ───────────────────────
-  // pdfDoc is a full HTML doc string. Extract only <body> content
-  // because div.innerHTML ignores <html>/<head>/<body> wrapper tags
-  const bodyMatch = pdfDoc.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  const bodyContent = bodyMatch ? bodyMatch[1] : pdfDoc;
+  // Table header
+  const C1=CW*0.46, C2=CW*0.12, C3=CW*0.21, C4=CW*0.21;
+  const X2=ML+C1, X3=ML+C1+C2, X4=ML+C1+C2+C3;
+  fillRect(ML, y, CW, 6.5, DKBLUE);
+  text('CONCEPTO / DESCRIPCIÓN', ML+2,   y+4.3, { size:7.5, bold:true, color:WHITE });
+  text('CANT.',     X2 + C2/2,  y+4.3, { size:7.5, bold:true, color:WHITE, align:'center' });
+  text('PRECIO UNIT.', X3+C3-2, y+4.3, { size:7.5, bold:true, color:WHITE, align:'right' });
+  text('TOTAL',     ML+CW-2,    y+4.3, { size:7.5, bold:true, color:WHITE, align:'right' });
+  y += 6.5;
 
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:white;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#212529;';
-  wrap.innerHTML = bodyContent;
-  document.body.appendChild(wrap);
+  if (items.length === 0) {
+    fillRect(ML, y, CW, 8, BGGRAY);
+    text('Sin ítems con monto mayor a cero', ML + CW/2, y+5, { size:8, color:GRAY, align:'center' });
+    y += 8;
+  } else {
+    items.forEach((item, i) => {
+      const rowH = item.detalle ? 9 : 6.5;
+      fillRect(ML, y, CW, rowH, i%2===0 ? LGRAY : WHITE);
+      doc.setDrawColor(220,220,220); doc.setLineWidth(0.15);
+      doc.rect(ML, y, CW, rowH, 'S');
+      // concepto
+      text(item.concepto, ML+2, y + (item.detalle ? 4 : 4.3), { size:8, bold:true, color:BLACK });
+      if (item.detalle) text(item.detalle, ML+2, y+7.5, { size:7, color:GRAY });
+      // qty
+      text(fmtQty(item.qty), X2+C2/2, y + rowH/2 + 1.5, { size:8, color:BLUE, align:'center' });
+      // price
+      text('Gs '+fmtMoney(item.price), X3+C3-2, y + rowH/2 + 1.5, { size:8, color:BLUE, align:'right' });
+      // total
+      text('Gs '+fmtMoney(item.total), ML+CW-2, y + rowH/2 + 1.5, { size:8.5, bold:true, color:DKBLUE, align:'right' });
+      y += rowH;
+    });
+  }
 
-  // Small delay so browser fully renders the injected HTML
-  await new Promise(r => setTimeout(r, 350));
+  // ════════════════════════════════════════════════════
+  // TOTAL GENERAL
+  // ════════════════════════════════════════════════════
+  y += 2;
+  fillRect(ML, y, CW, 14, BLUE);
+  text('TOTAL GENERAL', ML + CW*0.35, y+5.5, { size:9, bold:true, color:WHITE, align:'right' });
+  text('Gs ' + gtText, ML + CW - 2, y+9.5, { size:16, bold:true, color:GOLD, align:'right' });
+  // small label
+  text('A PAGAR', ML + CW*0.35, y+9.5, { size:7, color:[180,220,255], align:'right' });
+  y += 14 + 5;
 
-  // Filename: "NombrePaciente - Presupuesto de Cirugia.pdf"
-  const safeName = nombre.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s]/g, '').trim();
-  const filename  = `${safeName} - Presupuesto de Cirugia.pdf`;
+  // ════════════════════════════════════════════════════
+  // OBSERVACIONES
+  // ════════════════════════════════════════════════════
+  if (obs.trim()) {
+    fillRect(ML, y, CW, 6, BLUE);
+    text('OBSERVACIONES', ML+3, y+4.2, { size:8, bold:true, color:WHITE });
+    y += 6;
+    // Measure wrapped text height
+    doc.setFontSize(9);
+    const obsLines = doc.splitTextToSize(obs, CW - 6);
+    const obsH = obsLines.length * 4.5 + 4;
+    fillRect(ML, y, CW, obsH, BGGRAY);
+    doc.setDrawColor(...BLUE); doc.setLineWidth(0.3);
+    doc.rect(ML, y, CW, obsH, 'S');
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...BLACK);
+    doc.text(obsLines, ML+3, y+4);
+    y += obsH + 4;
+  }
 
-  await html2pdf().set({
-    margin:      [6, 6, 6, 6],
-    filename,
-    image:       { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  }).from(wrap).save();
+  // ════════════════════════════════════════════════════
+  // PIE INSTITUCIONAL
+  // ════════════════════════════════════════════════════
+  // Position at bottom if space, else continue
+  const footerY = Math.max(y + 4, PH - 30);
+  hline(footerY, BLUE);
+  text('Instituto Privado del Niño S.A.', PW/2, footerY+5, { size:9, bold:true, color:DKBLUE, align:'center' });
+  text('Este presupuesto es aproximado y puede variar según la evolución clínica del paciente.', PW/2, footerY+10, { size:7, color:GRAY, align:'center' });
+  text('Se solicita un depósito del 50% del monto total al momento del ingreso del paciente, como confirmación del procedimiento quirúrgico.', PW/2, footerY+15, { size:7, color:GRAY, align:'center', maxW: CW });
+  text('Documento generado electrónicamente por el sistema de presupuestos del Instituto Privado del Niño.', PW/2, footerY+20, { size:6.5, color:[180,180,180], align:'center' });
 
-  document.body.removeChild(wrap);
+  // ── Save ──────────────────────────────────────────────
+  const safeName = nombreRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s]/g, '').trim();
+  doc.save(`${safeName} - Presupuesto de Cirugia.pdf`);
 }
 
 // ─── WHATSAPP ────────────────────────────────────────────
