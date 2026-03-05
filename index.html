@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{--blue:#1565C0;--blue-med:#1976D2;--blue-light:#E3F2FD;--blue-dark:#0D47A1;--gray:#F5F5F5;--border:#B0BEC5;--text:#212121;--orange:#FF6F00;--green:#2E7D32;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -145,7 +146,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 .btn-mc{padding:10px 22px;border:2px solid #B0BEC5;border-radius:50px;background:white;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;color:#546E7A;cursor:pointer;}
 .btn-ms{padding:10px 24px;border:none;border-radius:50px;background:#25D366;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;color:white;cursor:pointer;}
 .btn-ms:hover{background:#1DA851;}
-.toast{position:fixed;bottom:24px;right:24px;background:#212121;color:white;padding:12px 20px;border-radius:10px;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;}
+.toast{position:fixed;bottom:24px;right:24px;max-width:420px;background:#212121;color:white;padding:12px 20px;border-radius:10px;font-family:"Montserrat",sans-serif;font-size:12px;font-weight:700;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:9999;transform:translateY(100px);opacity:0;transition:all 0.3s;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.green{background:#2E7D32;}
 </style>
@@ -956,17 +957,18 @@ function closeEmailModal(){
 function isValidEmail(e){
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 }
+// ─── EMAIL — Gmail prellenado + PDF descarga automática ─────
+const HOSPITAL_EMAIL = 'urgenciasipn@gmail.com';
+
 async function sendEmail(){
   const to1 = document.getElementById('emailTo1').value.trim();
   const to2 = document.getElementById('emailTo2').value.trim();
   const copyHospital = document.getElementById('emailCopyHospital').checked;
-  const hospitalEmail = 'urgenciasipn@gmail.com';
 
-  // Validate
+  // ── Validación ────────────────────────────────────────
   let valid = true;
   document.getElementById('emailTo1').classList.remove('input-error');
   document.getElementById('emailTo2').classList.remove('input-error');
-
   if(!to1 || !isValidEmail(to1)){
     document.getElementById('emailTo1').classList.add('input-error');
     document.getElementById('emailTo1').focus();
@@ -974,97 +976,86 @@ async function sendEmail(){
   }
   if(to2 && !isValidEmail(to2)){
     document.getElementById('emailTo2').classList.add('input-error');
-    document.getElementById('emailTo2').focus();
+    if(valid) document.getElementById('emailTo2').focus();
     valid = false;
   }
   if(!valid) return;
 
-  // ── Build recipient list ──────────────────────────────
-  const toList = [to1];
-  if(to2) toList.push(to2);
-  const ccList = copyHospital ? [hospitalEmail] : [];
+  // ── Datos ─────────────────────────────────────────────
+  const nombreRaw = v('nombre') || 'Paciente';
+  const safeName  = nombreRaw.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s]/g,'').trim();
+  const subject   = `Presupuesto de Cirugía – ${nombreRaw}`;
+  const bodyText  =
+`Buenas tardes,
 
-  // ── Patient info ──────────────────────────────────────
-  const nombre   = v('nombre') || 'Paciente';
-  const safeName = nombre.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\s]/g,'').trim();
-  const subject  = `Presupuesto de Cirugía – ${nombre}`;
-  const body     = `Buenas tardes,\n\nAdjuntamos el presupuesto aproximado correspondiente al procedimiento quirúrgico del paciente:\n\nPaciente: ${nombre}\n\nEste presupuesto es referencial y puede variar según la evolución clínica o requerimientos adicionales durante la atención.\n\nAnte cualquier consulta, quedamos a su disposición.\n\nAtentamente\nInstituto Privado del Niño`;
+Adjuntamos el presupuesto aproximado correspondiente al procedimiento quirúrgico del paciente:
 
-  // ── Show spinner ──────────────────────────────────────
-  document.getElementById('emailForm').style.display='none';
-  document.getElementById('emailSending').style.display='flex';
+Paciente: ${nombreRaw}
 
-  // ── Generate PDF blob (same logic as exportPDF, no side effects) ──
+Este presupuesto es referencial y puede variar según la evolución clínica o requerimientos adicionales durante la atención.
+
+Ante cualquier consulta, quedamos a su disposición.
+
+Atentamente
+Instituto Privado del Niño`;
+
+  // ── Mostrar spinner ───────────────────────────────────
+  document.getElementById('emailForm').style.display = 'none';
+  document.getElementById('emailSending').style.display = 'flex';
+
   try {
-    const { jsPDF } = window.jspdf;
+    // 1️⃣ Generar y descargar PDF automáticamente
+    const pdfBlob  = await generatePDFBlob();
+    const pdfUrl   = URL.createObjectURL(pdfBlob);
+    const dlLink   = document.createElement('a');
+    dlLink.href     = pdfUrl;
+    dlLink.download = `${safeName} - Presupuesto de Cirugia.pdf`;
+    document.body.appendChild(dlLink);
+    dlLink.click();
+    document.body.removeChild(dlLink);
+    setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
 
-    // Re-generate the same PDF silently to get a blob
-    const pdfBlob = await generatePDFBlob();
+    // Pequeña pausa para que el browser procese la descarga
+    await new Promise(r => setTimeout(r, 600));
 
-    // ── Build mailto with all fields ─────────────────────
-    // Note: mailto cannot attach files — browsers block it for security.
-    // We use EmailJS (free tier, no backend) to send with attachment.
-    // If EmailJS not configured, fall back to mailto + download.
-    const emailjsReady = (typeof emailjs !== 'undefined');
+    // 2️⃣ Armar destinatarios
+    const toList = [to1];
+    if(to2) toList.push(to2);
 
-    if(emailjsReady){
-      // EmailJS path — attach blob
-      const reader = new FileReader();
-      reader.onload = async function(){
-        const base64data = reader.result.split(',')[1];
-        try{
-          await emailjs.send('service_ipn','template_presupuesto',{
-            to_email:   toList.join(','),
-            cc_email:   ccList.join(','),
-            subject,
-            message:    body,
-            patient_name: nombre,
-            attachment_name: `${safeName} - Presupuesto de Cirugia.pdf`,
-            attachment_data: base64data
-          });
-          closeEmailModal();
-          showToast('✅ Correo enviado correctamente','green');
-        }catch(err){
-          console.error('EmailJS error:',err);
-          fallbackMailto(toList, ccList, subject, body, safeName, pdfBlob);
-        }
-      };
-      reader.readAsDataURL(pdfBlob);
-    } else {
-      // No email service configured → download PDF + open mailto
-      fallbackMailto(toList, ccList, subject, body, safeName, pdfBlob);
-    }
-  } catch(err){
-    console.error('Email send error:', err);
-    document.getElementById('emailForm').style.display='block';
-    document.getElementById('emailSending').style.display='none';
-    showToast('❌ Error al enviar el correo','');
+    // CC al hospital si está activado
+    const ccPart = copyHospital
+      ? `&cc=${encodeURIComponent(HOSPITAL_EMAIL)}`
+      : '';
+
+    // 3️⃣ Abrir Gmail con todo prellenado
+    // Gmail compose URL: https://mail.google.com/mail/?view=cm&to=...
+    const gmailUrl = 'https://mail.google.com/mail/?view=cm'
+      + `&to=${encodeURIComponent(toList.join(','))}`
+      + ccPart
+      + `&su=${encodeURIComponent(subject)}`
+      + `&body=${encodeURIComponent(bodyText)}`
+      + '&authuser=coberturasipn@gmail.com';  // abre con esa cuenta si está logueada
+
+    window.open(gmailUrl, '_blank');
+
+    // 4️⃣ Cerrar modal y mostrar instrucción
+    closeEmailModal();
+
+    // Toast especial con instrucción de adjuntar
+    showToastLong(
+      `✅ PDF descargado — en Gmail hacé clic en el clip 📎 y adjuntá: "${safeName} - Presupuesto de Cirugia.pdf"`,
+      'green'
+    );
+
+  } catch(err) {
+    console.error('Email error:', err);
+    document.getElementById('emailForm').style.display = 'block';
+    document.getElementById('emailSending').style.display = 'none';
+    showToast('❌ Error al preparar el correo','');
   }
 }
 
-function fallbackMailto(toList, ccList, subject, body, safeName, pdfBlob){
-  // Download the PDF automatically
-  const url = URL.createObjectURL(pdfBlob);
-  const a   = document.createElement('a');
-  a.href    = url;
-  a.download = `${safeName} - Presupuesto de Cirugia.pdf`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 5000);
-
-  // Open mailto (without attachment — browser security limitation)
-  const allTo  = toList.join(',');
-  const ccPart = ccList.length ? `&cc=${encodeURIComponent(ccList.join(','))}` : '';
-  const mailto = `mailto:${encodeURIComponent(allTo)}?subject=${encodeURIComponent(subject)}${ccPart}&body=${encodeURIComponent(body)}`;
-  window.open(mailto, '_blank');
-
-  closeEmailModal();
-  showToast('✅ PDF descargado — completá el adjunto en tu cliente de correo','green');
-}
-
 async function generatePDFBlob(){
-  // Identical logic to exportPDF but returns a Blob instead of saving
   const nombreRaw = v('nombre') || 'Paciente';
   const nombre    = nombreRaw.toUpperCase();
   const seguro    = (v('seguro')  || '—').toUpperCase();
@@ -1078,24 +1069,17 @@ async function generatePDFBlob(){
   const obs       = v('obs')      || '';
   const gtText    = document.getElementById('gt-total').textContent || '0';
 
-  const now   = new Date();
-  const pad   = n => String(n).padStart(2,'0');
-  const yyyy  = now.getFullYear();
-  const mo    = pad(now.getMonth()+1);
-  const dd    = pad(now.getDate());
-  const hh    = pad(now.getHours());
-  const mi    = pad(now.getMinutes());
-  const ss    = pad(now.getSeconds());
-  const autoNro  = `IPN-${yyyy}${mo}${dd}-${hh}${mi}${ss}`;
-  const fechaGen = `${dd}/${mo}/${yyyy}`;
-  const horaGen  = `${hh}:${mi}:${ss}`;
+  const now=new Date(), pad=n=>String(n).padStart(2,'0');
+  const yyyy=now.getFullYear(), mo=pad(now.getMonth()+1), dd=pad(now.getDate());
+  const hh=pad(now.getHours()), mi=pad(now.getMinutes()), ss=pad(now.getSeconds());
+  const autoNro=`IPN-${yyyy}${mo}${dd}-${hh}${mi}${ss}`;
+  const fechaGen=`${dd}/${mo}/${yyyy}`, horaGen=`${hh}:${mi}:${ss}`;
 
-  const items = [];
+  const items=[];
   document.querySelectorAll('#tbody tr').forEach(tr=>{
-    const qty   = unformat(tr.querySelector('.qty-input').value);
-    const price = unformat(tr.querySelector('.price-input').value);
-    const total = qty * price;
-    if(total<=0) return;
+    const qty=unformat(tr.querySelector('.qty-input').value);
+    const price=unformat(tr.querySelector('.price-input').value);
+    const total=qty*price; if(total<=0) return;
     items.push({
       concepto:(tr.querySelector('.concepto-input').value||'').toUpperCase(),
       detalle: (tr.querySelector('.detalle-input').value ||'').toUpperCase(),
@@ -1103,102 +1087,111 @@ async function generatePDFBlob(){
     });
   });
 
-  const { jsPDF } = window.jspdf;
-  const doc  = new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4',orientation:'portrait'});
   const PW=210,PH=297,ML=12,MR=12,CW=PW-ML-MR;
   const BLUE=[13,110,253],DKBLUE=[10,57,107],WHITE=[255,255,255];
   const LGRAY=[240,247,255],GRAY=[108,117,125],BLACK=[33,37,41];
   const GOLD=[255,215,0],BGGRAY=[248,249,250];
   let y=0;
-
-  function fillRect(x,yy,w,h,c){doc.setFillColor(...c);doc.rect(x,yy,w,h,'F');}
-  function text(s,x,yy,o={}){
+  const fr=(x,yy,w,h,c)=>{doc.setFillColor(...c);doc.rect(x,yy,w,h,'F');};
+  const tx=(s,x,yy,o={})=>{
     const{size=9,bold=false,color=BLACK,align='left',maxW}=o;
-    doc.setFontSize(size);doc.setFont('helvetica',bold?'bold':'normal');doc.setTextColor(...color);
-    const to={align};if(maxW)to.maxWidth=maxW;doc.text(String(s),x,yy,to);
-  }
-  function hline(yy,c=[220,220,220]){doc.setDrawColor(...c);doc.setLineWidth(0.2);doc.line(ML,yy,ML+CW,yy);}
+    doc.setFontSize(size);doc.setFont('helvetica',bold?'bold':'normal');
+    doc.setTextColor(...color);const to={align};if(maxW)to.maxWidth=maxW;
+    doc.text(String(s),x,yy,to);
+  };
+  const hl=(yy,c=[220,220,220])=>{doc.setDrawColor(...c);doc.setLineWidth(0.2);doc.line(ML,yy,ML+CW,yy);};
 
-  const HDR_H=32;
-  fillRect(0,0,PW,HDR_H,BLUE);
+  // Header
+  fr(0,0,PW,32,BLUE);
   const logoSrc=document.querySelector('.doc-logo img')?.src||'';
   if(logoSrc.includes('base64,')){try{doc.addImage(logoSrc,'JPEG',ML,3,22,22,'','FAST');}catch(e){}}
-  text('INSTITUTO PRIVADO DEL NIÑO S.A.',PW/2,11,{size:13,bold:true,color:WHITE,align:'center'});
-  text('PRESUPUESTO QUIRÚRGICO',PW/2,17,{size:9,color:WHITE,align:'center'});
-  text('República del Paraguay',PW/2,22,{size:7,color:[200,225,255],align:'center'});
+  tx('INSTITUTO PRIVADO DEL NIÑO S.A.',PW/2,11,{size:13,bold:true,color:WHITE,align:'center'});
+  tx('PRESUPUESTO QUIRÚRGICO',PW/2,17,{size:9,color:WHITE,align:'center'});
+  tx('República del Paraguay',PW/2,22,{size:7,color:[200,225,255],align:'center'});
   const NW=58,NX=PW-MR-NW;
-  fillRect(NX,2,NW,28,DKBLUE);
-  text('N° PRESUPUESTO',NX+NW/2,7,{size:6,color:[180,210,255],align:'center'});
-  text(autoNro,NX+NW/2,13,{size:7,bold:true,color:GOLD,align:'center'});
+  fr(NX,2,NW,28,DKBLUE);
+  tx('N° PRESUPUESTO',NX+NW/2,7,{size:6,color:[180,210,255],align:'center'});
+  tx(autoNro,NX+NW/2,13,{size:7,bold:true,color:GOLD,align:'center'});
   doc.setDrawColor(...GOLD);doc.setLineWidth(0.3);doc.line(NX+3,15,NX+NW-3,15);
-  text(`Fecha: ${fechaGen}`,NX+NW/2,19,{size:7,color:WHITE,align:'center'});
-  text(`Hora:  ${horaGen}`, NX+NW/2,24,{size:7,color:WHITE,align:'center'});
-  y=HDR_H+5;
+  tx(`Fecha: ${fechaGen}`,NX+NW/2,19,{size:7,color:WHITE,align:'center'});
+  tx(`Hora:  ${horaGen}`, NX+NW/2,24,{size:7,color:WHITE,align:'center'});
+  y=37;
 
-  fillRect(ML,y,CW,6,BLUE);text('DATOS DEL PACIENTE',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
-  const ROW_H=6.5,LW=28;
-  function dataRow(lbl,val,yy,shade){
-    fillRect(ML,yy,CW,ROW_H,shade?LGRAY:BGGRAY);fillRect(ML,yy,LW,ROW_H,[225,237,255]);
-    doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(ML,yy,CW,ROW_H,'S');
-    text(lbl,ML+2,yy+4.3,{size:7,bold:true,color:DKBLUE});text(val,ML+LW+2,yy+4.3,{size:8,color:BLACK});
-  }
-  function dataRowHalf(l1,v1,l2,v2,yy,shade){
-    fillRect(ML,yy,CW,ROW_H,shade?LGRAY:BGGRAY);
-    fillRect(ML,yy,LW,ROW_H,[225,237,255]);doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(ML,yy,CW/2,ROW_H,'S');
-    text(l1,ML+2,yy+4.3,{size:7,bold:true,color:DKBLUE});text(v1,ML+LW+2,yy+4.3,{size:8,color:BLACK,maxW:CW/2-LW-3});
-    fillRect(ML+CW/2,yy,LW,ROW_H,[225,237,255]);doc.rect(ML+CW/2,yy,CW/2,ROW_H,'S');
-    text(l2,ML+CW/2+2,yy+4.3,{size:7,bold:true,color:DKBLUE});text(v2,ML+CW/2+LW+2,yy+4.3,{size:8,color:BLACK,maxW:CW/2-LW-3});
-  }
-  dataRow('PACIENTE',nombre,y,false);y+=ROW_H;
-  dataRowHalf('SEGURO',seguro,'PLAN',plan,y,true);y+=ROW_H;
-  dataRowHalf('CIRUGÍA',cirugia,'CIRUJANO',cirujano,y,false);y+=ROW_H;
-  dataRowHalf('CELULAR',celular,'EMAIL',email,y,true);y+=ROW_H;
-  dataRowHalf('FECHA',fecha,'PADRE/MADRE',padre,y,false);y+=ROW_H;
-  y+=5;
+  // Datos paciente
+  fr(ML,y,CW,6,BLUE);tx('DATOS DEL PACIENTE',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
+  const RH=6.5,LW=28;
+  const dr=(lbl,val,yy,shade)=>{
+    fr(ML,yy,CW,RH,shade?LGRAY:BGGRAY);fr(ML,yy,LW,RH,[225,237,255]);
+    doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(ML,yy,CW,RH,'S');
+    tx(lbl,ML+2,yy+4.3,{size:7,bold:true,color:DKBLUE});
+    tx(val,ML+LW+2,yy+4.3,{size:8,color:BLACK,maxW:CW-LW-4});
+  };
+  const drh=(l1,v1,l2,v2,yy,shade)=>{
+    fr(ML,yy,CW,RH,shade?LGRAY:BGGRAY);
+    fr(ML,yy,LW,RH,[225,237,255]);doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);
+    doc.rect(ML,yy,CW/2,RH,'S');
+    tx(l1,ML+2,yy+4.3,{size:7,bold:true,color:DKBLUE});
+    tx(v1,ML+LW+2,yy+4.3,{size:8,color:BLACK,maxW:CW/2-LW-3});
+    fr(ML+CW/2,yy,LW,RH,[225,237,255]);doc.rect(ML+CW/2,yy,CW/2,RH,'S');
+    tx(l2,ML+CW/2+2,yy+4.3,{size:7,bold:true,color:DKBLUE});
+    tx(v2,ML+CW/2+LW+2,yy+4.3,{size:8,color:BLACK,maxW:CW/2-LW-3});
+  };
+  dr('PACIENTE',nombre,y,false);y+=RH;
+  drh('SEGURO',seguro,'PLAN',plan,y,true);y+=RH;
+  drh('CIRUGÍA',cirugia,'CIRUJANO',cirujano,y,false);y+=RH;
+  drh('CELULAR',celular,'EMAIL',email,y,true);y+=RH;
+  drh('FECHA',fecha,'PADRE/MADRE',padre,y,false);y+=RH+5;
 
-  fillRect(ML,y,CW,6,BLUE);text('DETALLE DEL PRESUPUESTO',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
-  const C1=CW*0.46,C2=CW*0.12,C3=CW*0.21;
-  const X2=ML+C1,X3=ML+C1+C2,X4=ML+C1+C2+C3;
-  fillRect(ML,y,CW,6.5,DKBLUE);
-  text('CONCEPTO / DESCRIPCIÓN',ML+2,y+4.3,{size:7.5,bold:true,color:WHITE});
-  text('CANT.',X2+C2/2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'center'});
-  text('PRECIO UNIT.',X3+C3-2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'right'});
-  text('TOTAL',ML+CW-2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'right'});
+  // Detalle
+  fr(ML,y,CW,6,BLUE);tx('DETALLE DEL PRESUPUESTO',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
+  const C1=CW*0.46,C2=CW*0.12,C3=CW*0.21,X2=ML+C1,X3=ML+C1+C2;
+  fr(ML,y,CW,6.5,DKBLUE);
+  tx('CONCEPTO / DESCRIPCIÓN',ML+2,y+4.3,{size:7.5,bold:true,color:WHITE});
+  tx('CANT.',X2+C2/2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'center'});
+  tx('PRECIO UNIT.',X3+C3-2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'right'});
+  tx('TOTAL',ML+CW-2,y+4.3,{size:7.5,bold:true,color:WHITE,align:'right'});
   y+=6.5;
   if(!items.length){
-    fillRect(ML,y,CW,8,BGGRAY);text('Sin ítems con monto mayor a cero',ML+CW/2,y+5,{size:8,color:GRAY,align:'center'});y+=8;
-  }else{
+    fr(ML,y,CW,8,BGGRAY);tx('Sin ítems con monto mayor a cero',ML+CW/2,y+5,{size:8,color:GRAY,align:'center'});y+=8;
+  } else {
     items.forEach((item,i)=>{
-      const rowH=item.detalle?9:6.5;
-      fillRect(ML,y,CW,rowH,i%2===0?LGRAY:WHITE);
-      doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(ML,y,CW,rowH,'S');
-      text(item.concepto,ML+2,y+(item.detalle?4:4.3),{size:8,bold:true,color:BLACK});
-      if(item.detalle)text(item.detalle,ML+2,y+7.5,{size:7,color:GRAY});
-      text(fmtQty(item.qty),X2+C2/2,y+rowH/2+1.5,{size:8,color:BLUE,align:'center'});
-      text('Gs '+fmtMoney(item.price),X3+C3-2,y+rowH/2+1.5,{size:8,color:BLUE,align:'right'});
-      text('Gs '+fmtMoney(item.total),ML+CW-2,y+rowH/2+1.5,{size:8.5,bold:true,color:DKBLUE,align:'right'});
-      y+=rowH;
+      const rh=item.detalle?9:6.5;
+      fr(ML,y,CW,rh,i%2===0?LGRAY:WHITE);
+      doc.setDrawColor(220,220,220);doc.setLineWidth(0.15);doc.rect(ML,y,CW,rh,'S');
+      tx(item.concepto,ML+2,y+(item.detalle?4:4.3),{size:8,bold:true,color:BLACK});
+      if(item.detalle) tx(item.detalle,ML+2,y+7.5,{size:7,color:GRAY});
+      tx(fmtQty(item.qty),X2+C2/2,y+rh/2+1.5,{size:8,color:BLUE,align:'center'});
+      tx('Gs '+fmtMoney(item.price),X3+C3-2,y+rh/2+1.5,{size:8,color:BLUE,align:'right'});
+      tx('Gs '+fmtMoney(item.total),ML+CW-2,y+rh/2+1.5,{size:8.5,bold:true,color:DKBLUE,align:'right'});
+      y+=rh;
     });
   }
-  y+=2;
-  fillRect(ML,y,CW,14,BLUE);
-  text('TOTAL GENERAL',ML+CW*0.35,y+5.5,{size:9,bold:true,color:WHITE,align:'right'});
-  text('Gs '+gtText,ML+CW-2,y+9.5,{size:16,bold:true,color:GOLD,align:'right'});
-  text('A PAGAR',ML+CW*0.35,y+9.5,{size:7,color:[180,220,255],align:'right'});
-  y+=14+5;
+
+  // Total
+  y+=2;fr(ML,y,CW,14,BLUE);
+  tx('TOTAL GENERAL',ML+CW*0.35,y+5.5,{size:9,bold:true,color:WHITE,align:'right'});
+  tx('Gs '+gtText,ML+CW-2,y+9.5,{size:16,bold:true,color:GOLD,align:'right'});
+  tx('A PAGAR',ML+CW*0.35,y+9.5,{size:7,color:[180,220,255],align:'right'});
+  y+=16;
+
+  // Observaciones
   if(obs.trim()){
-    fillRect(ML,y,CW,6,BLUE);text('OBSERVACIONES',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
-    doc.setFontSize(9);const obsLines=doc.splitTextToSize(obs,CW-6);const obsH=obsLines.length*4.5+4;
-    fillRect(ML,y,CW,obsH,BGGRAY);doc.setDrawColor(...BLUE);doc.setLineWidth(0.3);doc.rect(ML,y,CW,obsH,'S');
-    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...BLACK);doc.text(obsLines,ML+3,y+4);
-    y+=obsH+4;
+    y+=3;fr(ML,y,CW,6,BLUE);tx('OBSERVACIONES',ML+3,y+4.2,{size:8,bold:true,color:WHITE});y+=6;
+    doc.setFontSize(9);const ol=doc.splitTextToSize(obs,CW-6);const oh=ol.length*4.5+4;
+    fr(ML,y,CW,oh,BGGRAY);doc.setDrawColor(...BLUE);doc.setLineWidth(0.3);doc.rect(ML,y,CW,oh,'S');
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...BLACK);doc.text(ol,ML+3,y+4);
+    y+=oh;
   }
-  const footerY=Math.max(y+4,PH-30);
-  hline(footerY,BLUE);
-  text('Instituto Privado del Niño S.A.',PW/2,footerY+5,{size:9,bold:true,color:DKBLUE,align:'center'});
-  text('Este presupuesto es aproximado y puede variar según la evolución clínica del paciente.',PW/2,footerY+10,{size:7,color:GRAY,align:'center'});
-  text('Se solicita un depósito del 50% del monto total al momento del ingreso del paciente, como confirmación del procedimiento quirúrgico.',PW/2,footerY+15,{size:7,color:GRAY,align:'center',maxW:CW});
-  text('Documento generado electrónicamente por el sistema de presupuestos del Instituto Privado del Niño.',PW/2,footerY+20,{size:6.5,color:[180,180,180],align:'center'});
+
+  // Pie
+  const fy=Math.max(y+6,PH-30);
+  hl(fy,BLUE);
+  tx('Instituto Privado del Niño S.A.',PW/2,fy+5,{size:9,bold:true,color:DKBLUE,align:'center'});
+  tx('Este presupuesto es aproximado y puede variar según la evolución clínica del paciente.',PW/2,fy+10,{size:7,color:GRAY,align:'center'});
+  tx('Se solicita un depósito del 50% del monto total al momento del ingreso del paciente, como confirmación del procedimiento quirúrgico.',PW/2,fy+15,{size:7,color:GRAY,align:'center',maxW:CW});
+  tx('Documento generado electrónicamente por el sistema de presupuestos del Instituto Privado del Niño.',PW/2,fy+20,{size:6.5,color:[180,180,180],align:'center'});
 
   return doc.output('blob');
 }
@@ -1208,6 +1201,11 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg; t.className='toast '+type; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
+}
+function showToastLong(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),9000);
 }
 
 document.getElementById('waModal').addEventListener('click',function(e){if(e.target===this)closeWAModal();});
