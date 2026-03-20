@@ -103,7 +103,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 .obs-wrap{padding:0 24px;}
 .obs-hdr{background:var(--blue-med);color:white;font-family:"Montserrat",sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;margin:0 -24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .obs-note{font-size:9px;color:#FFF176;font-weight:500;letter-spacing:0;text-transform:none;font-style:italic;}
-.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:12px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:130px;outline:none;text-transform:uppercase;line-height:1.6;}
+.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:14px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:110px;outline:none;text-transform:uppercase;line-height:1.7;}
 .obs-wrap textarea:focus{border-color:var(--blue-med);}
 .footer-note{text-align:center;font-size:9px;color:#78909C;font-style:italic;padding:6px 24px;background:var(--blue-light);border-top:1px solid #BBDEFB;}
 /* ACTIONS */
@@ -590,6 +590,9 @@ function initNew(){
   document.getElementById('modBadge').style.display='none';
   document.getElementById('modDateWrap').style.display='none';
   clearFormFields(false);
+  // Ensure obs default text is set
+  const obsInit=document.getElementById('obs');
+  if(obsInit && !obsInit.value.trim()) obsInit.value='Los medicamentos y descartables utilizados durante la internación se facturarán al finalizar el procedimiento quirúrgico. El monto no es fijo, ya que dependerá de los insumos y medicamentos efectivamente utilizados durante la cirugía.\nAsimismo, se solicita un depósito de garantía equivalente al 50% del total al momento del ingreso del paciente.';
   buildTable();
   attachPatientListeners();
   showView('form');
@@ -645,7 +648,8 @@ function savePresupuesto(){
 function clearFormFields(ask=true){
   if(ask&&!confirm('¿Limpiar el formulario?')) return;
   ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  const obsEl=document.getElementById('obs'); if(obsEl) obsEl.value='Los medicamentos y descartables utilizados durante la internación se facturarán al finalizar el procedimiento quirúrgico. El monto no es fijo, ya que dependerá de los insumos y medicamentos efectivamente utilizados durante la cirugía.\nAsimismo, se solicita un depósito de garantía equivalente al 50% del total al momento del ingreso del paciente.';
+  const OBS_DEF = 'Los medicamentos y descartables utilizados durante la internación se facturarán al finalizar el procedimiento quirúrgico. El monto no es fijo, ya que dependerá de los insumos y medicamentos efectivamente utilizados durante la cirugía.\nAsimismo, se solicita un depósito de garantía equivalente al 50% del total al momento del ingreso del paciente.';
+  const obsEl=document.getElementById('obs'); if(obsEl) obsEl.value=OBS_DEF;
   const t=new Date();
   document.getElementById('fecha').value=`${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
 }
