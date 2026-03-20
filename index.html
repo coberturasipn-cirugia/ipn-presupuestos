@@ -391,23 +391,31 @@ const COUNTER_KEY = 'ipn_counter_v1';
 const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxXjkUzTN1ItgZW0NAq35-9Y6RrNnpKNnr4m63svMiLv4ikGvt4j7COEB6zQI84ITrM/exec';
 let   sheetsEnabled = SHEETS_URL.startsWith('https://script.google.com');
 
+// ── Sheets: envío via GET con datos en URL (evita CORS de POST) ──────
 async function sheetsSave(data) {
   if (!sheetsEnabled) return;
   try {
-    await fetch(SHEETS_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'save', payload: data })
-    });
-  } catch(e) { console.warn('Sheets sync error:', e); }
+    // Usamos GET con parámetro porque Apps Script acepta CORS en GET
+    // pero no en POST desde browsers externos
+    const payload = encodeURIComponent(JSON.stringify({ action: 'save', payload: data }));
+    const r = await fetch(`${SHEETS_URL}?data=${payload}`);
+    const j = await r.json();
+    if (j.ok) {
+      console.log('✅ Sheets sync:', j.action, j.nro);
+    } else {
+      console.warn('Sheets save error:', j.error);
+    }
+  } catch(e) {
+    console.warn('Sheets sync error:', e);
+  }
 }
 async function sheetsGetAll() {
   if (!sheetsEnabled) return null;
   try {
-    const r = await fetch(SHEETS_URL + '?action=getAll');
+    const r = await fetch(`${SHEETS_URL}?action=getAll`);
     const j = await r.json();
     return j.ok ? j.rows : null;
-  } catch(e) { return null; }
+  } catch(e) { console.warn('sheetsGetAll error:', e); return null; }
 }
 async function sheetsSearch(q) {
   if (!sheetsEnabled) return null;
@@ -415,7 +423,7 @@ async function sheetsSearch(q) {
     const r = await fetch(`${SHEETS_URL}?action=search&q=${encodeURIComponent(q)}`);
     const j = await r.json();
     return j.ok ? j.rows : null;
-  } catch(e) { return null; }
+  } catch(e) { console.warn('sheetsSearch error:', e); return null; }
 }
 
 function loadDB()  { try{ return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); }catch{ return []; } }
