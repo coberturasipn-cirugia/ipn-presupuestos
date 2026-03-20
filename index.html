@@ -103,7 +103,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 .obs-wrap{padding:0 24px;}
 .obs-hdr{background:var(--blue-med);color:white;font-family:"Montserrat",sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;margin:0 -24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .obs-note{font-size:9px;color:#FFF176;font-weight:500;letter-spacing:0;text-transform:none;font-style:italic;}
-.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:8px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:55px;outline:none;text-transform:uppercase;}
+.obs-wrap textarea{width:100%;border:1.5px solid var(--border);border-radius:0 0 6px 6px;padding:12px;font-family:"Inter",sans-serif;font-size:12px;color:var(--text);resize:vertical;min-height:130px;outline:none;text-transform:uppercase;line-height:1.6;}
 .obs-wrap textarea:focus{border-color:var(--blue-med);}
 .footer-note{text-align:center;font-size:9px;color:#78909C;font-style:italic;padding:6px 24px;background:var(--blue-light);border-top:1px solid #BBDEFB;}
 /* ACTIONS */
@@ -167,7 +167,15 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 
 <!-- VIEW SEARCH -->
 <div class="view active" id="view-search">
-  <div class="search-bar">
+  <div id="sheetsStatusBar" style="display:none;align-items:center;gap:8px;margin-bottom:10px;padding:8px 14px;background:rgba(255,255,255,0.12);border-radius:10px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;color:white;">
+  <span id="sheetsStatusDot" style="width:8px;height:8px;border-radius:50%;background:#4CAF50;display:inline-block;flex-shrink:0"></span>
+  <span id="sheetsStatusText">Conectado a Google Sheets</span>
+  <label style="margin-left:auto;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;font-size:10px;">
+    <input type="checkbox" id="sheetsSearchToggle" checked style="accent-color:#FFD54F;width:14px;height:14px;">
+    Buscar en Sheets
+  </label>
+</div>
+<div class="search-bar">
     <input type="text" id="searchInput" placeholder="🔍  Buscar por nombre, N°, cirugía, seguro..." oninput="renderList()">
     <select id="filterStatus" onchange="renderList()">
       <option value="">Todos</option>
@@ -176,6 +184,19 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
     </select>
   </div>
   <div id="presupList"></div>
+
+  <!-- SHEETS PANEL -->
+  <div id="sheetsPanel" style="display:none;margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:white">
+        📊 Google Sheets — Historial completo
+      </div>
+      <button onclick="loadSheetsData()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:7px 16px;color:white;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;">
+        🔄 Actualizar
+      </button>
+    </div>
+    <div id="sheetsList"></div>
+  </div>
 </div>
 
 <!-- VIEW FORM -->
@@ -280,7 +301,8 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
         Observaciones / Referencia del Seguro
         <span class="obs-note">⚠ Celular sin el cero inicial · Ej: 981 123 456</span>
       </div>
-      <textarea id="obs" placeholder="Observaciones, referencia del seguro..."></textarea>
+      <textarea id="obs" placeholder="Observaciones, referencia del seguro...">Los medicamentos y descartables utilizados durante la internación se facturarán al finalizar el procedimiento quirúrgico. El monto no es fijo, ya que dependerá de los insumos y medicamentos efectivamente utilizados durante la cirugía.
+Asimismo, se solicita un depósito de garantía equivalente al 50% del total al momento del ingreso del paciente.</textarea>
     </div>
     <div class="footer-note">Este presupuesto es APROXIMADO y puede variar según la evolución del paciente. Válido por 30 días.</div>
 
@@ -325,7 +347,7 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 
       <label class="checkbox-row" for="emailCopyHospital">
         <input type="checkbox" id="emailCopyHospital" checked>
-        <span>Enviar copia al hospital<br><strong>urgenciasipn@gmail.com</strong></span>
+        <span>Enviar copia al hospital<br><strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2b5e594c4e4548424a58425b456b4c464a424705484446">[email&#160;protected]</a></strong></span>
       </label>
 
       <div class="modal-btns">
@@ -363,6 +385,38 @@ tfoot td.lbl{text-align:center;letter-spacing:1px;text-transform:uppercase;font-
 <script>
 const DB_KEY      = 'ipn_presupuestos_v2';
 const COUNTER_KEY = 'ipn_counter_v1';
+
+// ─── GOOGLE SHEETS CONFIG ──────────────────────────────
+// Pegá aquí la URL del Web App de Apps Script después de desplegarlo
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxXjkUzTN1ItgZW0NAq35-9Y6RrNnpKNnr4m63svMiLv4ikGvt4j7COEB6zQI84ITrM/exec';
+let   sheetsEnabled = SHEETS_URL.startsWith('https://script.google.com');
+
+async function sheetsSave(data) {
+  if (!sheetsEnabled) return;
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save', payload: data })
+    });
+  } catch(e) { console.warn('Sheets sync error:', e); }
+}
+async function sheetsGetAll() {
+  if (!sheetsEnabled) return null;
+  try {
+    const r = await fetch(SHEETS_URL + '?action=getAll');
+    const j = await r.json();
+    return j.ok ? j.rows : null;
+  } catch(e) { return null; }
+}
+async function sheetsSearch(q) {
+  if (!sheetsEnabled) return null;
+  try {
+    const r = await fetch(`${SHEETS_URL}?action=search&q=${encodeURIComponent(q)}`);
+    const j = await r.json();
+    return j.ok ? j.rows : null;
+  } catch(e) { return null; }
+}
 
 function loadDB()  { try{ return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); }catch{ return []; } }
 function saveDB(d) { localStorage.setItem(DB_KEY, JSON.stringify(d)); }
@@ -578,6 +632,8 @@ function savePresupuesto(){
   if(idx>=0){ data.createdAt=db[idx].createdAt; data.modifiedAt=stamp; data.isModified=true; db[idx]=data; }
   else{ data.createdAt=stamp; data.modifiedAt=null; data.isModified=false; db.push(data); }
   saveDB(db);
+  // Sync to Google Sheets (fire and forget)
+  sheetsSave(data);
   if(!isNew){ document.getElementById('modBadge').style.display='flex'; document.getElementById('modDateWrap').style.display='block'; document.getElementById('modDateDisplay').textContent=stamp; }
   else{ document.getElementById('modBadge').style.display='none'; document.getElementById('modDateWrap').style.display='none'; }
   originalSnap=JSON.parse(JSON.stringify(collectFormData()));
@@ -588,7 +644,8 @@ function savePresupuesto(){
 // ─── CLEAR ───────────────────────────────────────────────
 function clearFormFields(ask=true){
   if(ask&&!confirm('¿Limpiar el formulario?')) return;
-  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano','obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['nombre','seguro','plan','celular','email','padre','cirugia','cirujano'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const obsEl=document.getElementById('obs'); if(obsEl) obsEl.value='Los medicamentos y descartables utilizados durante la internación se facturarán al finalizar el procedimiento quirúrgico. El monto no es fijo, ya que dependerá de los insumos y medicamentos efectivamente utilizados durante la cirugía.\nAsimismo, se solicita un depósito de garantía equivalente al 50% del total al momento del ingreso del paciente.';
   const t=new Date();
   document.getElementById('fecha').value=`${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()}`;
 }
@@ -623,7 +680,51 @@ function renderList(){
     </div>`;
   }).join('')+'</div>';
 }
-function updateNavCounter(){ const n=loadDB().length; document.getElementById('navCounter').textContent=n+' presupuesto'+(n!==1?'s':''); }
+function updateNavCounter(){
+  const n=loadDB().length;
+  document.getElementById('navCounter').textContent=n+' presupuesto'+(n!==1?'s':'');
+  // Show/hide sheets status bar
+  const bar = document.getElementById('sheetsStatusBar');
+  if(bar) bar.style.display = sheetsEnabled ? 'flex' : 'none';
+}
+
+async function loadSheetsData(){
+  const panel = document.getElementById('sheetsList');
+  if(!panel) return;
+  panel.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.7);font-family:Montserrat,sans-serif;font-size:12px">⏳ Cargando desde Google Sheets...</div>';
+  document.getElementById('sheetsPanel').style.display = 'block';
+
+  const q    = (document.getElementById('searchInput')?.value||'').trim();
+  const rows = q ? await sheetsSearch(q) : await sheetsGetAll();
+
+  if(!rows){
+    panel.innerHTML = '<div style="text-align:center;padding:30px;color:#FFD54F;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700">⚠ No se pudo conectar con Google Sheets.<br><span style=\"font-weight:400;font-size:11px;opacity:0.8\">Verificá que la URL del Apps Script esté configurada.</span></div>';
+    return;
+  }
+  if(!rows.length){
+    panel.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.6);font-family:Montserrat,sans-serif;font-size:12px">Sin resultados en Sheets</div>';
+    return;
+  }
+
+  panel.innerHTML = rows.map(r => {
+    const ismod = String(r.estado||'').toLowerCase().includes('modif');
+    const total = r.total ? Math.round(parseFloat(r.total)).toLocaleString('es-PY') : '0';
+    return `<div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 14px rgba(0,0,0,0.1);border-left:4px solid ${ismod?'#FF6F00':'#1565C0'}">
+      <div style="font-family:Montserrat,sans-serif;font-size:20px;font-weight:800;color:${ismod?'#FF6F00':'#0D47A1'};min-width:60px">${String(r.nro||'').padStart(4,'0')}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#212121">${r.nombre||'—'}</div>
+        <div style="font-size:11px;color:#78909C;margin-top:3px">🏷 ${r.cirugia||'—'} &nbsp;·&nbsp; 🔖 ${r.seguro||'—'} &nbsp;·&nbsp; 👨‍⚕️ ${r.cirujano||'—'}</div>
+        ${r.items ? `<div style="font-size:10px;color:#90A4AE;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px">📋 ${r.items}</div>` : ''}
+        ${r.obs   ? `<div style="font-size:10px;color:#546E7A;margin-top:2px;font-style:italic">💬 ${r.obs}</div>` : ''}
+      </div>
+      <div style="text-align:right;min-width:120px">
+        <div style="font-family:Montserrat,sans-serif;font-size:13px;font-weight:800;color:#0D47A1">Gs ${total}</div>
+        <div style="font-size:10px;color:#90A4AE;margin-top:2px">📅 ${r.fecha||'—'}</div>
+        <div style="font-size:9px;margin-top:3px;font-weight:700;color:${ismod?'#E65100':'#2E7D32'}">${r.estado||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // ─── PDF ─────────────────────────────────────────────────
 async function exportPDF(){
@@ -1208,6 +1309,18 @@ function showToastLong(msg,type=''){
   setTimeout(()=>t.classList.remove('show'),9000);
 }
 
+// Show sheets panel and load when typing in search (if enabled)
+document.getElementById('searchInput')?.addEventListener('input', ()=>{
+  if(sheetsEnabled && document.getElementById('sheetsSearchToggle')?.checked){
+    clearTimeout(window._sheetsSearchTimer);
+    window._sheetsSearchTimer = setTimeout(loadSheetsData, 600);
+  }
+});
+document.getElementById('sheetsSearchToggle')?.addEventListener('change', function(){
+  document.getElementById('sheetsPanel').style.display = this.checked ? 'block' : 'none';
+  if(this.checked) loadSheetsData();
+});
+
 document.getElementById('waModal').addEventListener('click',function(e){if(e.target===this)closeWAModal();});
 document.getElementById('emailModal').addEventListener('click',function(e){if(e.target===this)closeEmailModal();});
 document.getElementById('emailTo1').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();document.getElementById('emailTo2').focus();}});
@@ -1215,8 +1328,11 @@ document.getElementById('emailTo2').addEventListener('keydown',function(e){if(e.
 document.getElementById('waNumber').addEventListener('keydown',function(e){if(e.key==='Enter')sendWhatsApp();});
 
 // ─── INIT ─────────────────────────────────────────────────
-updateNavCounter();
-renderList();
+document.addEventListener('DOMContentLoaded',function(){
+  updateNavCounter();
+  renderList();
+  if(sheetsEnabled) setTimeout(loadSheetsData, 800);
+});
 </script>
 </body>
 </html>
